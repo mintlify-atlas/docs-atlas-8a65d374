@@ -1,0 +1,98 @@
+{
+  "projectType": "saas",
+  "projectName": "cslol-manager",
+  "projectDescription": "A modern, high-performance mod manager for League of Legends with full Fantome mod format support.",
+  "theme": "aspen",
+  "primaryColor": "#0A8754",
+  "lightColor": "#10B981",
+  "darkColor": "#065F46",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/mod-management",
+              "features/profiles",
+              "features/mod-creation",
+              "features/fantome-format"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/installing-mods",
+              "guides/creating-mods",
+              "guides/managing-profiles",
+              "guides/wad-files",
+              "guides/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI Tools",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "cli/overview",
+              "cli/installation"
+            ]
+          },
+          {
+            "group": "Commands",
+            "pages": [
+              "cli/commands/addwad",
+              "cli/commands/copy",
+              "cli/commands/export",
+              "cli/commands/import",
+              "cli/commands/mkoverlay",
+              "cli/commands/runoverlay"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Resources",
+            "pages": [
+              "reference/license",
+              "reference/cslol-dll-policy",
+              "reference/faq",
+              "reference/contributing"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "High-performance native C++ mod manager with Qt GUI",
+    "Full Fantome (.fantome) mod format support",
+    "Profile management for organizing and switching mod sets",
+    "Advanced mod creation suite with WAD pack/unpack tools",
+    "CLI tools for automated mod operations and overlay building",
+    "Automatic updates and filtering capabilities"
+  ],
+  "publicApiSurface": [
+    "CSLOLTools (Qt/QML API)",
+    "mod-tools CLI (addwad, copy, export, import, mkoverlay, runoverlay)",
+    "cslol-dll.dll (injection module)",
+    "Fantome mod format (.fantome, .zip)",
+    "Profile management system",
+    "WAD file operations"
+  ]
+}
