@@ -1,0 +1,132 @@
+---
+title: mkoverlay Command
+description: Build an overlay from multiple mods against the game's WADs, resolving conflicts deterministically.
+---
+
+## Syntax
+
+```bash
+mod-tools mkoverlay <mods_dir> <overlay_dir> --game:<path> --mods:<name1>/<name2>/... [--noTFT] [--ignoreConflict]
+```
+
+## Arguments
+
+<ParamField path="mods_dir" type="string" required>
+  Parent directory containing the candidate mods as subfolders.
+</ParamField>
+
+<ParamField path="overlay_dir" type="string" required>
+  Output directory where overlay WADs are written.
+</ParamField>
+
+## Required Flags
+
+<ParamField path="--game" type="string" required>
+  Path to the game folder to build against. This flag is required for overlay building.
+</ParamField>
+
+<ParamField path="--mods" type="string" required>
+  Slash-separated list of subfolder names within `<mods_dir>` to include, in apply order (e.g., `ModA/ModB/ModC`).
+</ParamField>
+
+## Optional Flags
+
+<ParamField path="--noTFT" type="boolean">
+  Exclude TFT assets when indexing the game.
+</ParamField>
+
+<ParamField path="--ignoreConflict" type="boolean">
+  Don't error on conflicts; later mods in the list win.
+</ParamField>
+
+## Behavior
+
+The `mkoverlay` command performs the following operations:
+
+### 1. Safety Processing
+
+Removes overlay-unsafe entries (e.g., `*.SubChunkTOC`) to avoid collisions with the game.
+
+### 2. Conflict Resolution
+
+- Resolves conflicts within each individual mod
+- Resolves conflicts across the mod list in the order specified
+- By default, errors on conflicts unless `--ignoreConflict` is set
+- When conflicts are ignored, later mods in the list take precedence
+
+### 3. Overlay Generation
+
+- Merges all selected mods into a unified overlay
+- Writes the merged overlay to `<overlay_dir>`
+- Cleans up stray WAD files
+
+## Mod Apply Order
+
+Mods are applied in the order specified in the `--mods` flag. This order is crucial for conflict resolution:
+
+```bash
+--mods:BaseTheme/CustomSkins/SoundPack
+```
+
+In this example:
+1. `BaseTheme` is applied first
+2. `CustomSkins` is applied second (overrides conflicting BaseTheme files)
+3. `SoundPack` is applied last (takes precedence over both)
+
+## Examples
+
+### Build overlay with conflict handling
+
+```bash
+mod-tools mkoverlay ./Mods ./Overlay --game:/games/LoL --mods:MyModA/MyModB --ignoreConflict
+```
+
+This command:
+- Scans `./Mods` directory for `MyModA` and `MyModB` subfolders
+- Applies mods in order (MyModA, then MyModB)
+- Builds overlay against the game at `/games/LoL`
+- Ignores conflicts (MyModB wins on conflicts)
+- Writes overlay to `./Overlay`
+
+### Build overlay without TFT assets
+
+```bash
+mod-tools mkoverlay ./Mods ./Overlay --game:/games/LoL --mods:SkinMod/AudioMod --noTFT
+```
+
+This command:
+- Excludes TFT assets during game indexing
+- Applies SkinMod and AudioMod in order
+- Creates Summoner's Rift-only overlay
+
+### Strict conflict checking
+
+```bash
+mod-tools mkoverlay ./Mods ./Overlay --game:/games/LoL --mods:Mod1/Mod2/Mod3
+```
+
+This command:
+- Does NOT use `--ignoreConflict`
+- Will error if conflicts are detected between mods
+- Useful for ensuring mods are compatible
+
+## Use Cases
+
+- **Multi-mod installation**: Combine multiple mods into a single overlay
+- **Conflict management**: Control which mod wins in case of file conflicts
+- **Performance optimization**: Create a single overlay instead of loading multiple mods
+- **Mod testing**: Test mod combinations before applying to game
+- **Distribution**: Create pre-configured mod packs
+
+## Troubleshooting
+
+### Conflict Errors
+
+If you encounter conflict errors:
+1. Add `--ignoreConflict` flag to allow later mods to override
+2. Adjust mod order in `--mods` to prioritize preferred mods last
+3. Remove conflicting mods from the list
+
+### Missing Mods
+
+Ensure mod names in `--mods` exactly match subfolder names in `<mods_dir>` (case-sensitive).

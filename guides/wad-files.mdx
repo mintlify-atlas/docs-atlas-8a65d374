@@ -1,0 +1,429 @@
+---
+title: Working with WAD Files
+description: Guide to packing, unpacking, and managing WAD archives in cslol-manager
+---
+
+WAD files are the archive format used by League of Legends to store game assets. Learn how to extract, modify, and repack them for mod creation.
+
+## What Are WAD Files?
+
+WAD ("Where's All the Data") files are compressed archives containing:
+
+- **Textures** - Character skins, UI elements, particles
+- **Models** - 3D meshes and skeletons
+- **Animations** - Character movements and effects
+- **Audio** - Sound effects and voice lines
+- **Data** - Configuration files and game logic
+
+### WAD File Types
+
+<CardGroup cols={2}>
+  <Card title=".wad.client" icon="file">
+    Standard game WAD files used by the League client.
+    
+    Found in: `Game/DATA/FINAL/`
+  </Card>
+  
+  <Card title=".wad" icon="file-zipper">
+    Generic WAD format, converted to `.wad.client` when imported.
+  </Card>
+</CardGroup>
+
+## Extracting WAD Files
+
+Extracting (unpacking) a WAD file converts it into a directory structure you can modify.
+
+### Using CLI Tools
+
+<Steps>
+  <Step title="Locate the WAD File">
+    Game WAD files are in your League installation:
+    ```
+    League of Legends/Game/DATA/FINAL/Champions/
+    League of Legends/Game/DATA/FINAL/Maps/
+    League of Legends/Game/DATA/FINAL/Characters/
+    ```
+  </Step>
+
+  <Step title="Run Extract Command">
+    Use the `wad-extract` tool:
+    ```bash
+    wad-extract input.wad.client ./output-directory
+    ```
+    
+    This creates a directory with all extracted files.
+  </Step>
+
+  <Step title="Verify Extraction">
+    Check the output directory for:
+    - `data/` - Main game data
+    - `assets/` - Asset files
+    - `levels/` - Map data (if applicable)
+    - `OBSIDIAN_PACKED_MAPPING.txt` - Hash mapping file
+  </Step>
+</Steps>
+
+### Extract All WADs
+
+To extract multiple WAD files at once:
+
+```bash
+wad-extract-all ./input-directory ./output-directory
+```
+
+This recursively finds and extracts all `.wad` and `.wad.client` files.
+
+## Creating WAD Files
+
+Packing a directory back into a WAD file.
+
+### Using CLI Tools
+
+<Steps>
+  <Step title="Prepare Your Directory">
+    Ensure your directory structure matches the extracted format:
+    ```
+    my-modified-wad/
+    ├── data/
+    │   └── characters/
+    ├── assets/
+    └── OBSIDIAN_PACKED_MAPPING.txt
+    ```
+  </Step>
+
+  <Step title="Run Make Command">
+    Use the `wad-make` tool:
+    ```bash
+    wad-make ./input-directory output.wad.client
+    ```
+    
+    This creates a new WAD file from the directory contents.
+  </Step>
+
+  <Step title="Import to Mod">
+    Add the created WAD to a mod:
+    ```bash
+    mod-tools addwad output.wad.client ./MyMod --game:/path/to/league
+    ```
+  </Step>
+</Steps>
+
+## WAD Operations in Mods
+
+### Adding WADs to Mods
+
+The `addwad` command integrates WAD files into mod structure:
+
+```bash
+mod-tools addwad <src_wad> <dst_mod_dir> [flags]
+```
+
+<ParamField path="src_wad" type="string" required>
+  Source WAD file or unpacked directory
+</ParamField>
+
+<ParamField path="dst_mod_dir" type="string" required>
+  Target mod folder (must contain `META/info.json`)
+</ParamField>
+
+<ParamField path="--game" type="string">
+  Game folder path for rebasing and optimization
+</ParamField>
+
+<ParamField path="--removeUNK" type="boolean">
+  Remove entries not present in base game WADs
+</ParamField>
+
+<ParamField path="--noTFT" type="boolean">
+  Exclude Teamfight Tactics assets (map21, map22)
+</ParamField>
+
+### Example Workflows
+
+<CodeGroup>
+```bash Basic Add
+mod-tools addwad ./custom.wad ./MyMod
+```
+
+```bash With Optimization
+mod-tools addwad ./custom.wad ./MyMod \
+  --game:"C:/Riot Games/League of Legends/Game" \
+  --removeUNK \
+  --noTFT
+```
+
+```bash From Directory
+mod-tools addwad ./unpacked-wad/ ./MyMod \
+  --game:/path/to/league
+```
+</CodeGroup>
+
+## Understanding WAD Structure
+
+### Directory Layout
+
+Extracted WAD files follow this structure:
+
+```
+Champion.wad.client/
+├── data/
+│   └── characters/
+│       └── champion_name/
+│           ├── skins/
+│           │   ├── base/
+│           │   │   ├── champion_name.dds      # Texture
+│           │   │   ├── champion_name.skn      # Skin mesh
+│           │   │   └── champion_name.skl      # Skeleton
+│           │   └── skin01/                    # Alternate skin
+│           └── animations/
+│               └── *.anm                      # Animation files
+├── assets/
+│   └── characters/
+│       └── champion_name/
+│           └── *.bin                          # Binary data
+└── OBSIDIAN_PACKED_MAPPING.txt               # Hash mappings
+```
+
+### Key File Types
+
+<AccordionGroup>
+  <Accordion title="Textures (.dds, .png)">
+    Visual assets for characters, UI, and effects.
+    
+    - `.dds` - DirectDraw Surface (game native format)
+    - `.png` - Portable Network Graphics (easier to edit)
+    
+    Convert between formats using image editing tools.
+  </Accordion>
+
+  <Accordion title="Models (.skn, .skl, .scb, .sco)">
+    3D geometry and skeletal data.
+    
+    - `.skn` - Skin mesh (vertex data)
+    - `.skl` - Skeleton (bone structure)
+    - `.scb/.sco` - Static mesh objects
+    
+    Require specialized tools to edit (Maya, Blender with plugins).
+  </Accordion>
+
+  <Accordion title="Animations (.anm)">
+    Character movement and action animations.
+    
+    Binary format requiring animation editing tools.
+  </Accordion>
+
+  <Accordion title="Binary Data (.bin)">
+    Configuration and game logic files.
+    
+    Some can be edited with text editors (JSON-like format), others are binary.
+  </Accordion>
+</AccordionGroup>
+
+## Optimization and Rebasing
+
+### What Is Rebasing?
+
+Rebasing compares your WAD against the base game files and:
+
+1. **Identifies changes** - Finds files that differ from the base game
+2. **Removes duplicates** - Strips files identical to the base game
+3. **Aligns naming** - Matches the base mount structure
+4. **Reduces size** - Creates smaller, more efficient mods
+
+### When to Rebase
+
+<Check>**Always rebase when:**</Check>
+- Creating mods from extracted game WADs
+- Adding WADs that contain unmodified files
+- Preparing mods for distribution
+- Optimizing mod size
+
+<Warning>**Don't rebase when:**</Warning>
+- Working with custom assets not in the base game
+- The game path isn't configured correctly
+- You want to preserve all files regardless of origin
+
+### Rebase Example
+
+```bash
+# Without rebasing - includes all files
+mod-tools addwad ./modified.wad ./MyMod
+# Result: 50 MB mod
+
+# With rebasing - only changed files
+mod-tools addwad ./modified.wad ./MyMod \
+  --game:"C:/Riot Games/League of Legends/Game"
+# Result: 5 MB mod (only actual changes)
+```
+
+## Advanced WAD Techniques
+
+### Filtering TFT Assets
+
+If you only play Summoner's Rift, exclude TFT files:
+
+```bash
+mod-tools addwad ./champion.wad ./MyMod \
+  --game:/path/to/league \
+  --noTFT
+```
+
+This skips:
+- `map21` (TFT map)
+- `map22` (TFT alternate map)
+
+Benefits:
+- Smaller mod size
+- Faster overlay builds
+- Reduced memory usage
+
+### Removing Unknown Entries
+
+Strip files not present in the base game:
+
+```bash
+mod-tools addwad ./custom.wad ./MyMod \
+  --game:/path/to/league \
+  --removeUNK
+```
+
+Use this when:
+- You accidentally included files from other sources
+- The WAD contains outdated or unused assets
+- You want the cleanest possible mod
+
+<Warning>
+  Be careful with `--removeUNK` when adding custom content that doesn't exist in the base game.
+</Warning>
+
+### Batch Processing
+
+Process multiple WADs efficiently:
+
+```bash
+# Extract all WADs
+for file in *.wad.client; do
+  wad-extract "$file" "./extracted/${file%.wad.client}"
+done
+
+# Modify files in ./extracted/
+
+# Add all back to mod
+for dir in ./extracted/*/; do
+  mod-tools addwad "$dir" ./MyMod --game:/path/to/league
+done
+```
+
+## Troubleshooting WAD Operations
+
+### Extraction Failed
+
+**Symptoms**: Extract command fails or produces empty directory
+
+**Solutions**:
+- Verify the WAD file isn't corrupted
+- Check you have read permissions
+- Ensure enough disk space for extraction
+- Try a different output directory
+
+### Import Failed
+
+**Symptoms**: `addwad` command fails with error
+
+**Solutions**:
+- Verify the mod has `META/info.json`
+- Check the game path is correct
+- Ensure `mod-tools.exe` exists
+- Review error message in `log.txt`
+
+### Rebasing Removes Everything
+
+**Symptoms**: Mod becomes empty after rebasing
+
+**Solutions**:
+- You didn't modify any files (all match base game)
+- Check the game path points to the correct version
+- Verify your changes are actually different from base
+- Don't use `--removeUNK` for custom content
+
+### WAD Too Large
+
+**Symptoms**: Created WAD file is very large
+
+**Solutions**:
+- Enable rebasing with `--game` flag
+- Use `--removeUNK` to strip unused entries
+- Enable `--noTFT` if you don't need TFT assets
+- Check for duplicate or temporary files in the directory
+
+## WAD File Locations
+
+### Game WAD Directories
+
+```
+League of Legends/
+└── Game/
+    └── DATA/
+        └── FINAL/
+            ├── Champions/        # Champion WADs
+            ├── Maps/            # Map and environment WADs
+            ├── Characters/      # Character models and data
+            ├── Particles/       # Particle effects
+            ├── Sounds/          # Audio files
+            └── UI/              # Interface elements
+```
+
+### Mod WAD Storage
+
+```
+cslol-manager/
+└── installed/
+    └── ModName/
+        └── WAD/
+            └── *.wad.client    # Optimized mod WADs
+```
+
+## Best Practices
+
+<Steps>
+  <Step title="Always Keep Backups">
+    Before modifying game WADs:
+    1. Copy the original WAD to a safe location
+    2. Extract to a separate directory
+    3. Work on the copy, not the original
+  </Step>
+
+  <Step title="Use Rebasing">
+    Always rebase when creating mods:
+    - Smaller file sizes
+    - Better compatibility
+    - Easier distribution
+  </Step>
+
+  <Step title="Validate Before Packing">
+    Before creating a WAD:
+    - Remove temporary files
+    - Check for leftover editor files
+    - Verify directory structure is correct
+  </Step>
+
+  <Step title="Test Incrementally">
+    When modifying WADs:
+    1. Make small changes
+    2. Test each change
+    3. Build incrementally
+    
+    Don't make all changes at once - it's harder to debug.
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Creating Mods" icon="wand-magic-sparkles" href="/guides/creating-mods">
+    Use WAD files to create complete mods
+  </Card>
+  <Card title="CLI Commands" icon="terminal" href="/cli/overview">
+    Master all WAD-related CLI tools
+  </Card>
+</CardGroup>

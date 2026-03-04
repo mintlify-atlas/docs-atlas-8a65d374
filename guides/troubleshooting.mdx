@@ -1,0 +1,608 @@
+---
+title: Troubleshooting
+description: Common issues and solutions for cslol-manager
+---
+
+Resolve common problems with cslol-manager, from installation issues to runtime errors.
+
+## Before You Start
+
+When troubleshooting, always:
+
+<Steps>
+  <Step title="Check the Log File">
+    The `log.txt` file (next to cslol-manager.exe) contains detailed error information.
+    
+    Look for:
+    - Error messages
+    - Stack traces
+    - Status updates before the failure
+  </Step>
+
+  <Step title="Run Diagnostics">
+    Use the built-in diagnostic tool:
+    - Click the **Diagnostics** button
+    - Or run `cslol-diag.exe` directly
+    
+    This checks system compatibility and configuration.
+  </Step>
+
+  <Step title="Check Known Issues">
+    Visit the [GitHub Issues](https://github.com/LeagueToolkit/cslol-manager/issues/136) for known workarounds.
+  </Step>
+</Steps>
+
+## Installation Issues
+
+### "Unsupported platform" Error
+
+**Symptom**: Error message on startup about unsupported machine configuration.
+
+**Cause**: Running on an incompatible operating system or architecture.
+
+**Solution**:
+<AccordionGroup>
+  <Accordion title="Check System Requirements">
+    Verify you're running:
+    - Windows 10 or Windows 11 (64-bit)
+    - Not Windows on ARM (unless using emulation)
+    
+    macOS support is experimental and may have limitations.
+  </Accordion>
+
+  <Accordion title="Update Windows">
+    Ensure Windows is fully updated:
+    1. Open Windows Update
+    2. Install all available updates
+    3. Restart and try again
+  </Accordion>
+</AccordionGroup>
+
+### Missing mod-tools.exe
+
+**Symptom**: "cslol-tools/mod-tools.exe is missing" error.
+
+**Cause**: Incomplete installation or anti-virus quarantine.
+
+**Solution**:
+<Steps>
+  <Step title="Check Anti-Virus">
+    Your anti-virus may have quarantined the file:
+    1. Open your anti-virus software
+    2. Check quarantine/blocked files
+    3. Restore `mod-tools.exe`
+    4. Add exception for cslol-manager folder
+  </Step>
+
+  <Step title="Reinstall">
+    Download a fresh copy:
+    1. Download the latest release
+    2. Extract to a new folder
+    3. Don't overwrite the old installation
+  </Step>
+
+  <Step title="Verify Files">
+    Check that these files exist:
+    - `cslol-manager.exe`
+    - `cslol-tools/mod-tools.exe`
+    - `cslol-tools/cslol-diag.exe` (Windows only)
+  </Step>
+</Steps>
+
+### Can't Acquire Lock
+
+**Symptom**: "Can not run multiple instances" error.
+
+**Cause**: Another instance is running, or lockfile wasn't cleaned up.
+
+**Solution**:
+<Tabs>
+  <Tab title="Close Other Instances">
+    1. Check Task Manager for `cslol-manager.exe`
+    2. End all instances
+    3. Restart the application
+  </Tab>
+
+  <Tab title="Delete Lockfile">
+    If no other instance is running:
+    1. Close cslol-manager
+    2. Delete the `lockfile` in the cslol-manager directory
+    3. Restart
+  </Tab>
+
+  <Tab title="macOS App Translocation">
+    On macOS first launch:
+    - Close the app
+    - Move it to Applications folder
+    - Relaunch from Applications
+    
+    This prevents macOS quarantine issues.
+  </Tab>
+</Tabs>
+
+## Profile and Mod Issues
+
+### Mod Installation Failed
+
+**Symptom**: "Already exists" error when installing.
+
+**Cause**: A mod with the same name is already installed.
+
+**Solution**:
+<Steps>
+  <Step title="Check Installed Mods">
+    Look in the mod list for a mod with the same name.
+  </Step>
+
+  <Step title="Choose Action">
+    Options:
+    - **Delete old mod**: Remove the existing mod first
+    - **Rename new mod**: Rename the file before installing
+    - **Skip**: Don't install if it's truly a duplicate
+  </Step>
+</Steps>
+
+### Profile Won't Build
+
+**Symptom**: Overlay build fails with conflict errors.
+
+**Cause**: Multiple mods modify the same game files.
+
+**Solution**:
+<AccordionGroup>
+  <Accordion title="Identify Conflicts">
+    Check the error message for conflicting file names:
+    ```
+    Error: Conflict in data/characters/ahri/skins/base/ahri.dds
+    Mods: "Skin A" and "Skin B"
+    ```
+  </Accordion>
+
+  <Accordion title="Option 1: Remove Conflicting Mod">
+    Disable one of the conflicting mods:
+    1. Uncheck one mod in the profile
+    2. Save the profile
+    3. Try building again
+  </Accordion>
+
+  <Accordion title="Option 2: Enable Skip Conflict">
+    Force the build to continue:
+    1. Check **Skip Conflict Check** option
+    2. Save and run
+    
+    <Warning>
+      Later mods in the list will override earlier ones. This may produce unexpected results.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+### Profile Won't Run
+
+**Symptom**: Patcher fails to start after building overlay.
+
+**Cause**: Missing files, permissions, or anti-virus blocking.
+
+**Solution**:
+<Steps>
+  <Step title="Check for Admin Prompt">
+    If you see "Run as administrator" in the error:
+    1. A file named `admin_allowed.txt` was created
+    2. Restart cslol-manager
+    3. It will request administrator privileges
+    4. Allow the elevation
+  </Step>
+
+  <Step title="Verify Game Path">
+    Ensure the League path is correct:
+    - Should point to folder containing `League of Legends.exe`
+    - On Windows: Usually `C:\Riot Games\League of Legends\Game`
+    - On macOS: Usually `/Applications/League of Legends.app/Contents/LoL/Game`
+  </Step>
+
+  <Step title="Check Anti-Virus">
+    Add exceptions for:
+    - `cslol-manager.exe`
+    - `cslol-tools/mod-tools.exe`
+    - The entire cslol-manager folder
+  </Step>
+</Steps>
+
+## Runtime Issues
+
+### Mods Not Appearing In-Game
+
+**Symptom**: Profile runs successfully but changes don't appear in League.
+
+**Cause**: Timing, game mode mismatch, or injection failure.
+
+**Solution**:
+<Tabs>
+  <Tab title="Timing">
+    **Start patcher before game**:
+    1. Run the profile in cslol-manager
+    2. Wait for "Status: Running" or "Status: Idle"
+    3. Then launch League of Legends
+    
+    <Note>
+      The patcher must be running before you start the game.
+    </Note>
+  </Tab>
+
+  <Tab title="Check Injection">
+    **Look for DLL messages**:
+    Check the status for lines like:
+    ```
+    [DLL] Loaded
+    [DLL] Hooked
+    [DLL] Patching...
+    ```
+    
+    If you don't see these, injection failed.
+  </Tab>
+
+  <Tab title="Game Mode">
+    **Verify mod compatibility**:
+    - Some mods only work in Summoner's Rift
+    - TFT requires different assets
+    - ARAM may have modified files
+    
+    Check if your mod targets the right game mode.
+  </Tab>
+
+  <Tab title="Reinstall Overlay">
+    **Rebuild from scratch**:
+    1. Stop the running profile
+    2. Delete the profile directory in `profiles/`
+    3. Save and run again
+    
+    This rebuilds the overlay completely.
+  </Tab>
+</Tabs>
+
+### Crashes or Freezes
+
+**Symptom**: cslol-manager or League crashes/freezes.
+
+**Cause**: Corrupted mod files, bad game state, or compatibility issues.
+
+**Solution**:
+<AccordionGroup>
+  <Accordion title="Disable All Mods">
+    Test if mods are causing the issue:
+    1. Create an empty profile
+    2. Run it
+    3. Launch League
+    
+    If it works, add mods back one at a time to identify the problem.
+  </Accordion>
+
+  <Accordion title="Repair League Client">
+    Fix game files:
+    1. Open League client
+    2. Click settings (gear icon)
+    3. Initiate repair
+    4. Wait for completion
+    5. Try mods again
+  </Accordion>
+
+  <Accordion title="Check for Updates">
+    Ensure compatibility:
+    - Update cslol-manager to latest version
+    - Update League to latest patch
+    - Rebuild all profiles after updates
+  </Accordion>
+</AccordionGroup>
+
+### Performance Issues
+
+**Symptom**: Game lags or stutters with mods enabled.
+
+**Cause**: Too many mods, large texture files, or resource conflicts.
+
+**Solution**:
+<Steps>
+  <Step title="Reduce Mod Count">
+    Fewer mods = better performance:
+    1. Disable unused mods
+    2. Only enable essentials
+    3. Test performance after each change
+  </Step>
+
+  <Step title="Enable TFT Blacklist">
+    If you don't play TFT:
+    1. Open settings
+    2. Enable **TFT Blacklist**
+    3. Rebuild profiles
+    
+    This reduces overlay size significantly.
+  </Step>
+
+  <Step title="Optimize Mods">
+    Ensure mods are optimized:
+    - All mods should be rebased against game files
+    - Use `--removeUNK` to strip unused entries
+    - Avoid including unmodified files
+  </Step>
+</Steps>
+
+## File and Permission Issues
+
+### "Access Denied" Errors
+
+**Symptom**: Can't write files, can't create mods, or operations fail with permission errors.
+
+**Solution**:
+<AccordionGroup>
+  <Accordion title="Run as Administrator">
+    Grant elevated privileges:
+    1. Right-click `cslol-manager.exe`
+    2. Select "Run as administrator"
+    3. Allow the UAC prompt
+  </Accordion>
+
+  <Accordion title="Check Folder Permissions">
+    Ensure you have write access:
+    1. Right-click the cslol-manager folder
+    2. Properties → Security tab
+    3. Ensure your user has "Full control"
+  </Accordion>
+
+  <Accordion title="Move to Different Location">
+    Avoid protected folders:
+    - Don't install in `Program Files`
+    - Don't install in system directories
+    - Use `C:\cslol-manager` or `Documents`
+  </Accordion>
+</AccordionGroup>
+
+### Files Not Saving
+
+**Symptom**: Changes to mod info or profiles don't persist.
+
+**Cause**: Insufficient permissions or file locks.
+
+**Solution**:
+<Steps>
+  <Step title="Close Other Programs">
+    Ensure no other programs are accessing the files:
+    - Close text editors
+    - Close file explorers in that directory
+    - Check for anti-virus scans
+  </Step>
+
+  <Step title="Check Disk Space">
+    Verify you have enough free space:
+    - Mod operations can require temporary storage
+    - Aim for at least 10GB free
+  </Step>
+
+  <Step title="Restart cslol-manager">
+    Sometimes a restart clears file locks:
+    1. Stop any running profiles
+    2. Close cslol-manager completely
+    3. Restart and try again
+  </Step>
+</Steps>
+
+## League of Legends Integration
+
+### Game Path Not Found
+
+**Symptom**: Can't detect or set League installation path.
+
+**Solution**:
+<Steps>
+  <Step title="Manual Path Selection">
+    Set the path manually:
+    1. Click **Settings** or **Game Path**
+    2. Browse to your League installation
+    3. Select the folder containing `League of Legends.exe`
+  </Step>
+
+  <Step title="Verify Path Format">
+    Correct paths:
+    - ✅ `C:\Riot Games\League of Legends\Game`
+    - ✅ `/Applications/League of Legends.app/Contents/LoL/Game`
+    - ❌ `C:\Riot Games\League of Legends` (too high)
+    - ❌ `C:\Riot Games\League of Legends\Game\League of Legends.exe` (file, not folder)
+  </Step>
+
+  <Step title="Reinstall League">
+    If the path is corrupted:
+    1. Uninstall League of Legends
+    2. Reinstall to default location
+    3. Set path in cslol-manager
+  </Step>
+</Steps>
+
+### Patcher Won't Detect Game
+
+**Symptom**: Patcher runs but doesn't inject into League.
+
+**Cause**: Game not running, wrong process, or anti-cheat blocking.
+
+**Solution**:
+<Tabs>
+  <Tab title="Launch Order">
+    Correct sequence:
+    1. Start cslol-manager
+    2. Run your profile (wait for "Running" status)
+    3. Launch League of Legends
+    4. Enter a game (loading screen or in-game)
+    
+    The patcher hooks when you enter a match.
+  </Tab>
+
+  <Tab title="Check Process Name">
+    Verify the game process:
+    - Windows: `League of Legends.exe`
+    - macOS: `LeagueofLegends` or `League of Legends`
+    
+    Open Task Manager to confirm the process name.
+  </Tab>
+
+  <Tab title="Disable Conflicting Software">
+    Close programs that might interfere:
+    - Other modding tools
+    - Screen recorders (some)
+    - Overlays (Discord, etc. - usually fine)
+  </Tab>
+</Tabs>
+
+## Server and Region Issues
+
+### Asian Servers / Garena
+
+**Symptom**: Mods don't work on Garena or Asian region servers.
+
+**Cause**: These servers use different clients with modified structures.
+
+**Solution**:
+<Warning>
+  **Officially Unsupported**
+  
+  cslol-manager officially supports only Riot-operated servers (NA, EUW, EUN, etc.).
+  
+  Asian servers and Garena are not officially supported and may experience issues.
+</Warning>
+
+Possible workarounds:
+- Check community forums for region-specific patches
+- Use alternative tools designed for your region
+- Contact server-specific modding communities
+
+## Advanced Troubleshooting
+
+### Enable Debug Mode
+
+For detailed logging:
+
+<Steps>
+  <Step title="Enable Debug Patcher">
+    When running a profile:
+    1. Check the **Debug Patcher** option
+    2. Save and run
+    3. Check `log.txt` for verbose output
+  </Step>
+
+  <Step title="Review Detailed Logs">
+    Look for:
+    - `[DLL]` messages about injection
+    - Stack traces for errors
+    - Status updates from mod-tools
+  </Step>
+</Steps>
+
+### Manual Diagnostics
+
+Run diagnostics manually:
+
+```bash
+# Windows
+cslol-diag.exe e
+
+# Generates diagnostic report
+```
+
+This checks:
+- System compatibility
+- File permissions
+- Required dependencies
+- Known configuration issues
+
+### Clean Reinstall
+
+For persistent issues, do a clean reinstall:
+
+<Steps>
+  <Step title="Backup Important Files">
+    Save:
+    - `profiles/` directory (your profiles)
+    - `installed/` directory (your mods)
+    - Any custom configuration
+  </Step>
+
+  <Step title="Complete Uninstall">
+    1. Stop all running profiles
+    2. Close cslol-manager
+    3. Delete the entire cslol-manager folder
+  </Step>
+
+  <Step title="Fresh Install">
+    1. Download the latest release
+    2. Extract to a new location
+    3. Configure game path
+  </Step>
+
+  <Step title="Restore Data">
+    Copy back:
+    - `profiles/` directory
+    - `installed/` directory
+    4. Refresh the mod list
+  </Step>
+</Steps>
+
+## Getting Help
+
+If you're still experiencing issues:
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/LeagueToolkit/cslol-manager/issues">
+    Search existing issues or create a new bug report
+  </Card>
+  
+  <Card title="Known Workarounds" icon="book" href="https://github.com/LeagueToolkit/cslol-manager/issues/136">
+    Check the issue tracker for documented solutions
+  </Card>
+</CardGroup>
+
+### Creating a Bug Report
+
+When reporting issues, include:
+
+1. **log.txt file** - Located next to cslol-manager.exe
+2. **Steps to reproduce** - Exact sequence that causes the issue
+3. **Expected vs actual behavior** - What should happen vs what does happen
+4. **System information**:
+   - Windows version
+   - League of Legends version
+   - cslol-manager version
+5. **Screenshots** - If applicable
+
+<Note>
+  **Before reporting**: Check if your issue is already listed in the known issues. Many common problems have documented workarounds.
+</Note>
+
+## Preventive Measures
+
+Avoid future issues:
+
+<AccordionGroup>
+  <Accordion title="Regular Backups">
+    Back up regularly:
+    - Export important mods
+    - Save profile configurations
+    - Keep `log.txt` from successful runs
+  </Accordion>
+
+  <Accordion title="Keep Software Updated">
+    Stay current:
+    - Update cslol-manager when new versions release
+    - Keep League of Legends updated
+    - Rebuild profiles after major patches
+  </Accordion>
+
+  <Accordion title="Maintain Clean Mods">
+    Good mod hygiene:
+    - Always rebase mods against game files
+    - Remove unused or broken mods
+    - Test mods before adding to main profile
+  </Accordion>
+
+  <Accordion title="Monitor Disk Space">
+    Prevent storage issues:
+    - Keep at least 10GB free
+    - Clean temporary files periodically
+    - Remove old profile builds
+  </Accordion>
+</AccordionGroup>

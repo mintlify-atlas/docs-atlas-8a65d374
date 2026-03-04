@@ -1,0 +1,156 @@
+---
+title: 'runoverlay Command'
+description: 'Run the overlay with the live patcher and stream status to stdout. Exit by pressing Enter when idle.'
+---
+
+## Syntax
+
+```bash
+mod-tools runoverlay <overlay_dir> <config_file> [--game:<path>] [--opts:<opt1>/<opt2>/...]
+```
+
+## Arguments
+
+<ParamField path="overlay_dir" type="string" required>
+  Overlay directory produced by the `mkoverlay` command.
+</ParamField>
+
+<ParamField path="config_file" type="string" required>
+  Config file consumed by the patcher (e.g., `.ini` file).
+</ParamField>
+
+## Flags
+
+<ParamField path="--game" type="string">
+  Optional path to the game folder if required by the patcher context.
+</ParamField>
+
+<ParamField path="--opts" type="string">
+  Slash-separated runtime options passed through to the patcher. Known values include:
+  - `none` - No special options
+  - `configless` - Run without config validation
+  
+  Other options may be supported by the patcher.
+</ParamField>
+
+## Behavior
+
+The `runoverlay` command performs live patching with the following characteristics:
+
+### Status Output
+
+Prints real-time status to stdout:
+- `Status: ...` - Current patcher state
+- `Config: ...` - Configuration info
+- `[DLL] ...` - DLL injection messages
+
+### Exit Control
+
+- **While patching or awaiting save**: Exit is locked
+- **When idle**: Press Enter to exit the process cleanly
+
+### Patcher Lifecycle
+
+1. Loads overlay from `<overlay_dir>`
+2. Reads configuration from `<config_file>`
+3. Begins live patching process
+4. Streams status updates
+5. Waits for user input to exit when idle
+
+## Examples
+
+### Run overlay with configless mode
+
+```bash
+mod-tools runoverlay ./Overlay ./overlay.ini --game:/games/LoL --opts:configless
+```
+
+This command:
+- Loads overlay from `./Overlay`
+- Uses `overlay.ini` configuration
+- References game at `/games/LoL`
+- Runs in configless mode (skips config validation)
+- Streams status to terminal
+
+### Run overlay with default options
+
+```bash
+mod-tools runoverlay ./Overlay ./config.ini --game:/games/LoL
+```
+
+This command:
+- Loads overlay with standard config validation
+- Uses default patcher options
+- Displays live patching status
+
+### Run overlay without game path
+
+```bash
+mod-tools runoverlay ./Overlay ./overlay.ini --opts:none
+```
+
+This command:
+- Runs overlay without explicit game path
+- Uses `none` option (no special runtime options)
+- Suitable for portable configurations
+
+## Status Messages
+
+Typical status progression:
+
+```
+Status: Initializing patcher
+Config: Loading overlay.ini
+Status: Injecting DLL
+[DLL] Injection successful
+Status: Patching game files
+Status: Idle - Press Enter to exit
+```
+
+## Use Cases
+
+- **Live testing**: Test overlay changes in real-time without game restart
+- **Development**: Rapidly iterate on mod development
+- **Debugging**: Monitor patcher status and DLL injection
+- **Custom configs**: Test different patcher configurations
+- **Automation**: Integrate with scripts for automated testing
+
+## Exit Behavior
+
+### Safe Exit States
+
+You can exit by pressing Enter when:
+- Patcher shows "Idle" status
+- No active patching operations
+- No pending save operations
+
+### Locked Exit States
+
+Exit is prevented when:
+- Active patching in progress
+- Awaiting file save operations
+- DLL injection in progress
+
+<Note>
+  Always wait for the idle state before exiting to avoid corrupting game files or leaving orphaned processes.
+</Note>
+
+## Troubleshooting
+
+### Patcher Won't Start
+
+- Verify `<overlay_dir>` was created by `mkoverlay`
+- Check `<config_file>` exists and is valid INI format
+- Ensure game path is correct if using `--game`
+
+### DLL Injection Fails
+
+- Run with administrator/elevated privileges
+- Check antivirus isn't blocking injection
+- Verify game process is running
+
+### Can't Exit
+
+- Wait for idle status
+- Check terminal for status messages
+- Don't force-kill unless absolutely necessary

@@ -1,0 +1,80 @@
+---
+title: Introduction to cslol-manager
+description: A modern, high-performance mod manager for League of Legends built with C++ and Qt
+---
+
+<Note>
+  **Maintenance mode:** cslol-manager is currently in maintenance/deprecation mode. Significant new features and development have shifted to the new **LTK Manager**. Check out [LeagueToolkit/ltk-manager](https://github.com/LeagueToolkit/ltk-manager) for the future of League modding.
+</Note>
+
+## What is cslol-manager?
+
+cslol-manager is a powerful, native mod manager for League of Legends that allows you to easily install, manage, and create custom skins and modifications. Built with C++ and Qt for maximum performance, it provides a modern graphical interface for working with the industry-standard Fantome mod format.
+
+The manager handles the entire modding workflow - from importing mods to organizing them into profiles, to patching them live into your game client.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="High performance" icon="bolt">
+    Built with native C++ for speed and efficiency. Fast mod loading and processing even with large mod collections.
+  </Card>
+  
+  <Card title="Fantome support" icon="box">
+    Full compatibility with the industry-standard `.fantome` mod format. Import and export mods with ease.
+  </Card>
+  
+  <Card title="Mod creation suite" icon="wrench">
+    Create mods from RAW folders, pack/unpack `.wad` files, edit mod metadata and preview images.
+  </Card>
+  
+  <Card title="Profile management" icon="folder">
+    Organize your mods into different profiles for quick switching between mod configurations.
+  </Card>
+  
+  <Card title="Advanced filtering" icon="filter">
+    Quickly find and organize your mod collection with built-in search and filtering.
+  </Card>
+  
+  <Card title="Automatic updates" icon="arrows-rotate">
+    Stay up to date with the latest features and patches through automatic update detection.
+  </Card>
+</CardGroup>
+
+## System requirements
+
+- **Operating system:** Windows 10 or 11 (64-bit)
+- **League of Legends:** A valid game installation on Riot-operated servers
+
+<Warning>
+  **Server support:** Officially supports Riot-operated servers only. Asian servers and Garena are not officially supported and may experience issues.
+</Warning>
+
+## How it works
+
+cslol-manager uses a core injection module (`cslol-dll.dll`) to patch modifications into League of Legends at runtime. The manager:
+
+1. Organizes your mods in the `installed/` directory
+2. Builds an overlay from enabled mods when you run the patcher
+3. Injects the overlay into the game client using live patching
+4. Monitors the game process and applies changes in real-time
+
+Mods are stored in a structured format with metadata (`META/info.json`) and WAD files (`WAD/` directory) that override game assets.
+
+## Use at your own risk
+
+<Warning>
+  This software is not endorsed by Riot Games. Use at your own risk. The developers are not responsible for any consequences of using this software.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Get started by installing cslol-manager on Windows 10 or 11
+  </Card>
+  
+  <Card title="Quickstart guide" icon="rocket" href="/quickstart">
+    Learn how to install your first mod in minutes
+  </Card>
+</CardGroup>

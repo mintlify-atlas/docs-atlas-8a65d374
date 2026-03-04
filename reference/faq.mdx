@@ -1,0 +1,218 @@
+---
+title: FAQ
+description: Frequently asked questions about cslol-manager
+---
+
+## General Questions
+
+<AccordionGroup>
+  <Accordion title="What is cslol-manager?">
+    cslol-manager is a modern, high-performance mod manager for League of Legends. Built with C++ and Qt, it allows you to easily install, manage, and create custom skins and modifications using the Fantome mod format.
+  </Accordion>
+
+  <Accordion title="Is cslol-manager safe to use?">
+    cslol-manager is open-source software that you can inspect and verify. However:
+
+    <Warning>
+    - This software is **not endorsed by Riot Games**
+    - Use at your own risk
+    - Modifying League of Legends may violate Riot's Terms of Service
+    </Warning>
+
+    The software only modifies local game files and does not provide gameplay advantages or replicate paid content when used properly.
+  </Accordion>
+
+  <Accordion title="Is cslol-manager still being developed?">
+    cslol-manager is currently in **maintenance mode**. The League Toolkit team has shifted development focus to the new **LTK Manager**.
+
+    <Note>
+    For the latest features and active development, check out [LTK Manager](https://github.com/LeagueToolkit/ltk-manager).
+    </Note>
+  </Accordion>
+
+  <Accordion title="What are the system requirements?">
+    - **Operating System:** Windows 10 or 11 (64-bit)
+    - **Game:** A valid League of Legends installation
+    - **Additional:** No special dependencies required - the application is self-contained
+  </Accordion>
+</AccordionGroup>
+
+## Installation & Setup
+
+<AccordionGroup>
+  <Accordion title="How do I install cslol-manager?">
+    1. Navigate to the [latest releases](https://github.com/LeagueToolkit/cslol-manager/releases)
+    2. Download `cslol-manager.exe` or the zip bundle
+    3. Run the application
+    4. Point it to your League of Legends game executable
+
+    See the [Installation Guide](/installation) for detailed instructions.
+  </Accordion>
+
+  <Accordion title="Where do I find my League of Legends executable?">
+    The default installation paths are:
+
+    - **Riot Client:** `C:\Riot Games\League of Legends\Game\League of Legends.exe`
+    - **Legacy Client:** `C:\Riot Games\League of Legends\LeagueClient.exe`
+
+    If you installed League in a custom location, navigate to that directory.
+  </Accordion>
+
+  <Accordion title="Can I use cslol-manager on Mac or Linux?">
+    No, cslol-manager is built specifically for Windows and requires Windows 10 or later. League of Legends itself is also Windows-only (though it can run on Mac).
+  </Accordion>
+</AccordionGroup>
+
+## Mods & Content
+
+<AccordionGroup>
+  <Accordion title="What is the Fantome mod format?">
+    Fantome (`.fantome`) is the industry-standard mod format for League of Legends. It's a packaged format that contains:
+
+    - Mod files and assets
+    - Metadata (name, author, version)
+    - Preview images
+
+    Learn more in the [Fantome documentation](https://github.com/LeagueToolkit/Fantome/wiki/Mod-File-Format).
+  </Accordion>
+
+  <Accordion title="Where can I find mods?">
+    <Warning>
+    Be cautious when downloading mods. Only use mods that:
+    - Don't replicate paid League of Legends content
+    - Don't provide competitive advantages
+    - Come from trusted sources
+    </Warning>
+
+    Popular sources include community mod sites and creator pages. Always verify the content complies with the [CSLOL DLL Policy](/reference/cslol-dll-policy).
+  </Accordion>
+
+  <Accordion title="Can I create my own mods?">
+    Yes! cslol-manager includes mod creation tools:
+
+    - Create mods from RAW folders
+    - Pack/Unpack `.wad` files
+    - Edit mod metadata and preview images
+
+    See the [Mod Creation Guide](/guides/creating-mods) for details.
+  </Accordion>
+
+  <Accordion title="What content is prohibited?">
+    <Warning>
+    The following content is strictly prohibited:
+
+    **Competitive Integrity:**
+    - Ability range indicators
+    - Hitbox visualization
+    - Any unfair gameplay advantages
+
+    **Paid Content Replication:**
+    - Copies of purchasable skins
+    - Direct ports from PBE or live content
+    - Content designed to replicate paid cosmetics
+    </Warning>
+
+    Creative transformative works are permitted. See [CSLOL DLL Policy](/reference/cslol-dll-policy) for details.
+  </Accordion>
+</AccordionGroup>
+
+## Server Support
+
+<AccordionGroup>
+  <Accordion title="Which servers are supported?">
+    <Note>
+    **Officially supported:** All Riot-operated servers (NA, EUW, EUNE, KR, OCE, etc.)
+    </Note>
+
+    <Warning>
+    **Not officially supported:**
+    - Asian servers (some regions)
+    - Garena-operated servers (SEA, TW, etc.)
+
+    These servers may experience issues or may not work at all.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Why doesn't it work on Garena servers?">
+    Garena servers use a different client infrastructure and patching system. The CSLOL injection method was designed for Riot-operated servers and may not be compatible with Garena's implementation.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="My mods aren't loading in-game">
+    Try these steps:
+
+    1. Verify the mod is enabled in cslol-manager
+    2. Ensure you're using the correct profile
+    3. Restart League of Legends completely
+    4. Check the log file for errors (located next to `cslol-manager.exe`)
+    5. Verify the mod is compatible with the current League patch
+  </Accordion>
+
+  <Accordion title="The application won't start">
+    Common solutions:
+
+    - Run as Administrator
+    - Ensure you're on Windows 10 or 11 (64-bit)
+    - Check that your antivirus isn't blocking the application
+    - Download the latest version from [releases](https://github.com/LeagueToolkit/cslol-manager/releases)
+  </Accordion>
+
+  <Accordion title="Where can I find the log file?">
+    The log file is located in the same directory as `cslol-manager.exe`. Look for a file named `log` or `cslol-manager.log`.
+
+    This file contains diagnostic information that can help troubleshoot issues.
+  </Accordion>
+
+  <Accordion title="Where can I report bugs?">
+    Check the [known issues](https://github.com/LeagueToolkit/cslol-manager/issues/136) first for workarounds.
+
+    To report a new bug:
+    1. Go to [GitHub Issues](https://github.com/LeagueToolkit/cslol-manager/issues)
+    2. Create a new bug report
+    3. Upload your log file
+    4. Describe the issue and steps to reproduce
+
+    See [Contributing](/reference/contributing) for more information.
+  </Accordion>
+</AccordionGroup>
+
+## Development & Contributing
+
+<AccordionGroup>
+  <Accordion title="Can I contribute to cslol-manager?">
+    Yes! Contributions are welcome. Please:
+
+    - Submit Pull Requests for bug fixes and improvements
+    - Open issues for feature requests or bugs
+    - Follow the project's coding standards
+
+    See the [Contributing Guide](/reference/contributing) for details.
+
+    <Note>
+    Since cslol-manager is in maintenance mode, major new features may be redirected to LTK Manager.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Can I use the DLL in my own launcher?">
+    Yes, but you must comply with the [CSLOL DLL Policy](/reference/cslol-dll-policy). Key requirements:
+
+    - Re-sign with your own code-signing certificate
+    - Publish transparency information
+    - Implement anti-skinhacking controls
+    - Do not modify or tamper with the DLL
+
+    Violations will result in immediate termination of your distribution rights.
+  </Accordion>
+
+  <Accordion title="Is the source code available?">
+    Yes! cslol-manager is open-source under the GPL-3.0 license.
+
+    - **Repository:** https://github.com/LeagueToolkit/cslol-manager
+    - **License:** [GPL-3.0](/reference/license)
+
+    You can view, modify, and distribute the source code according to the license terms.
+  </Accordion>
+</AccordionGroup>

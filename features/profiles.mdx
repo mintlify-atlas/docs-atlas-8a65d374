@@ -1,0 +1,334 @@
+---
+title: Profile Management
+description: Organize and manage different sets of enabled mods using profiles
+---
+
+## Overview
+
+Profiles allow you to save different configurations of enabled/disabled mods and quickly switch between them. This is useful for:
+
+- **Different champions**: One profile per main champion
+- **Game modes**: Separate profiles for ARAM, Summoner's Rift, etc.
+- **Themes**: Organizing mods by visual theme or style
+- **Testing**: Safe mod configuration management
+
+## Profile Structure
+
+Profiles are simple text files that store which mods are enabled:
+
+```
+cslol-manager/
+├── profiles/
+│   ├── Default Profile.profile
+│   ├── ARAM Skins.profile
+│   └── Main Champions.profile
+└── profiles.txt           # Current active profile name
+```
+
+Each `.profile` file contains a newline-separated list of enabled mod directory names:
+
+```
+Mod Name V1.0 by Author
+Another Mod V2.5 by Creator
+Third Mod V1.1 by Designer
+```
+
+## API Reference
+
+### Reading Profiles
+
+```cpp
+// From CSLOLToolsImpl.cpp:176-186
+QJsonObject CSLOLToolsImpl::readProfile(QString profileName) {
+    QJsonObject profile;
+    auto data = QString("");
+    if (QFile file(prog_ + "/profiles/" + profileName + ".profile"); 
+        file.open(QIODevice::ReadOnly)) {
+        data = QString::fromUtf8(file.readAll());
+    }
+    for (auto line : data.split('\n', Qt::SkipEmptyParts)) {
+        profile.insert(line.remove('\n'), true);
+    }
+    return profile;
+}
+```
+
+### Writing Profiles
+
+```cpp
+// From CSLOLToolsImpl.cpp:188-200
+void CSLOLToolsImpl::writeProfile(QString profileName, QJsonObject profile) {
+    QDir profilesDir(prog_);
+    profilesDir.mkpath("profiles");
+    if (QFile file(prog_ + "/profiles/" + profileName + ".profile"); 
+        file.open(QIODevice::WriteOnly)) {
+        for (auto mod : profile.keys()) {
+            auto data = mod.toUtf8();
+            if (data.size() == 0) continue;
+            data.push_back('\n');
+            file.write(data);
+        }
+    }
+}
+```
+
+## Managing Profiles
+
+### Creating a New Profile
+
+<Steps>
+  <Step title="Open Profile Menu">
+    Click the profile dropdown in the top toolbar.
+  </Step>
+  
+  <Step title="Select 'New Profile'">
+    Click the **+** or "New Profile" option.
+  </Step>
+  
+  <Step title="Enter Profile Name">
+    Enter a name (3-50 characters, letters, numbers, spaces, and hyphens allowed).
+    
+    ```qml
+    // From CSLOLDialogNewProfile.qml:25-27
+    validator: RegularExpressionValidator {
+        regularExpression: /[\w ]{3,50}/
+    }
+    ```
+  </Step>
+  
+  <Step title="Configure Mods">
+    The new profile is created with your current mod configuration.
+  </Step>
+</Steps>
+
+**Signal**: `onNewProfile()` → Opens `CSLOLDialogNewProfile`
+
+### Switching Profiles
+
+1. Click the profile dropdown in the toolbar
+2. Select the profile you want to load
+3. Your mod enable/disable states update automatically
+
+```qml
+// From main.qml:113-114
+onLoadProfile: function() {
+    cslolTools.loadProfile(cslolToolBar.profilesCurrentName)
+}
+```
+
+When a profile loads:
+
+```cpp
+// Signal: profileLoaded(QString name, QJsonObject profileMods)
+onProfileLoaded: function(name, profileMods) {
+    cslolModsView.loadProfile(profileMods)
+}
+```
+
+### Saving Profile Changes
+
+Profiles are saved in two scenarios:
+
+1. **Save & Run**: Saves current mod states to the active profile and launches the game
+2. **Save Only**: Saves without running (manual save)
+
+```qml
+// From main.qml:96-106  
+onSaveProfileAndRun: function(run) {
+    let name = cslolToolBar.profilesCurrentName
+    let mods = cslolModsView.saveProfile()
+    if (checkGamePath()) {
+        if (CSLOLUtils.checkGamePathAsia(cslolTools.leaguePath)) {
+            window.showUserError("Asian servers not supported", "因封禁，亚洲服不支持!")
+            return;
+        }
+        cslolTools.saveProfile(name, mods, run, settings.suppressInstallConflicts, 
+                               settings.verbosePatcher)
+    }
+}
+```
+
+**Parameters**:
+- `name` (QString): Profile name
+- `mods` (QJsonObject): Map of mod names to enabled state
+- `run` (bool): Whether to launch the patcher after saving
+- `skipConflict` (bool): Suppress conflict warnings
+- `debugPatcher` (bool): Enable verbose patcher logging
+
+**Signal**: `profileSaved(QString name, QJsonObject mods)`
+
+### Deleting Profiles
+
+<Warning>
+  Deleting a profile removes the `.profile` file permanently. This action cannot be undone.
+</Warning>
+
+<Steps>
+  <Step title="Select Profile">
+    Switch to the profile you want to delete.
+  </Step>
+  
+  <Step title="Open Profile Menu">
+    Click the dropdown in the toolbar.
+  </Step>
+  
+  <Step title="Choose 'Remove Profile'">
+    Click the delete/remove option.
+  </Step>
+  
+  <Step title="Confirmation">
+    The profile is deleted and you're switched to the previous profile or "Default Profile".
+  </Step>
+</Steps>
+
+```qml
+// From main.qml:347-361
+onProfileDeleted: {
+    let index = cslolToolBar.profilesCurrentIndex
+    if (cslolToolBar.profilesModel.length > 1) {
+        cslolToolBar.profilesModel.splice(index, 1)
+        cslolToolBar.profilesModel = cslolToolBar.profilesModel
+    } else {
+        cslolToolBar.profilesModel = [ "Default Profile" ]
+    }
+    if (index > 0) {
+        cslolToolBar.profilesCurrentIndex = index - 1
+    } else {
+        cslolToolBar.profilesCurrentIndex = 0
+    }
+}
+```
+
+**Signal**: `onRemoveProfile()` → `CSLOLTools.deleteProfile(name)` → `profileDeleted(QString name)`
+
+## Default Profile
+
+The "Default Profile" is always available and cannot be deleted:
+
+```cpp
+// From CSLOLToolsImpl.cpp:159-174
+QStringList CSLOLToolsImpl::listProfiles() {
+    if (QDir dir(prog_); !dir.exists()) {
+        dir.mkpath("profiles");
+    }
+    QStringList profiles;
+    for (QDirIterator it(prog_ + "/profiles", QDir::Dirs); it.hasNext();) {
+        auto info = QFileInfo(it.next());
+        auto name = info.fileName();
+        if (name == "." || name == "..") continue;
+        profiles.push_back(name);
+    }
+    if (!profiles.contains("Default Profile")) {
+        profiles.push_front("Default Profile");
+    }
+    return profiles;
+}
+```
+
+## Profile Persistence
+
+The current active profile is stored in `profiles.txt`:
+
+```cpp
+QString CSLOLToolsImpl::readCurrentProfile() {
+    auto data = QByteArray("Default Profile");
+    if (QFile file(prog_ + "/profiles.txt"); file.open(QIODevice::ReadOnly)) {
+        data = file.readAll();
+    }
+    return QString::fromUtf8(data);
+}
+
+void CSLOLToolsImpl::writeCurrentProfile(QString profile) {
+    if (QFile file(prog_ + "/profiles.txt"); file.open(QIODevice::WriteOnly)) {
+        file.write(profile.toUtf8());
+    }
+}
+```
+
+When cslol-manager starts, it:
+1. Loads all available profiles from the `profiles/` directory
+2. Reads `profiles.txt` to determine the last active profile
+3. Loads the mod states from that profile
+4. Marks mods as enabled/disabled accordingly
+
+```qml
+// From main.qml:324-339
+onInitialized: function(mods, profiles, profileName, profileMods) {
+    cslolToolBar.profilesModel = profiles
+    cslolToolBar.profilesCurrentIndex = 0
+    for(let i in profiles) {
+        if (profiles[i] === profileName) {
+            cslolToolBar.profilesCurrentIndex = i
+            break
+        }
+    }
+    for(let fileName in mods) {
+        cslolModsView.addMod(fileName, mods[fileName], fileName in profileMods)
+    }
+    // ...
+}
+```
+
+## Use Cases
+
+### Champion-Specific Profiles
+
+Create a profile for each champion you play:
+
+```
+Profiles:
+  ├── Lux Main          (Star Guardian, Cosmic, Elementalist skins)
+  ├── Yasuo Skins       (High Noon, Spirit Blossom, etc.)
+  └── ARAM Fun          (Random skins for ARAM games)
+```
+
+### Environment Profiles
+
+```
+Profiles:
+  ├── Production        (Stable, tested mods only)
+  ├── Testing           (New mods being evaluated)
+  └── Tournament        (Minimal UI mods for competitive)
+```
+
+### Seasonal Profiles
+
+```
+Profiles:
+  ├── Winter/Snowdown
+  ├── Halloween/Harrowing  
+  ├── Lunar Revel
+  └── Default Skins
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Keep profiles focused">
+    Create profiles with a clear purpose rather than random mod collections. This makes switching between them more intuitive.
+  </Accordion>
+  
+  <Accordion title="Use descriptive names">
+    Name profiles based on their purpose: "ARAM Skins", "Main Champions", "Minimal UI" rather than generic names like "Profile 1".
+  </Accordion>
+  
+  <Accordion title="Test before running">
+    After switching profiles, review which mods are enabled before launching the game to avoid conflicts.
+  </Accordion>
+  
+  <Accordion title="Backup important profiles">
+    Copy `.profile` files from the `profiles/` directory to backup important configurations.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Mod Management" icon="folder" href="/features/mod-management">
+    Learn how to install and organize mods
+  </Card>
+  
+  <Card title="Managing Profiles" icon="folder" href="/guides/managing-profiles">
+    Learn how to create and manage profiles
+  </Card>
+</CardGroup>

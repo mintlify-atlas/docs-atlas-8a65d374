@@ -1,0 +1,135 @@
+---
+title: 'import Command'
+description: 'Import various mod inputs into a standardized mod folder, optimizing as needed.'
+---
+
+## Syntax
+
+```bash
+mod-tools import <src> <dst_mod_dir> [--game:<path>] [--noTFT]
+```
+
+## Arguments
+
+<ParamField path="src" type="string" required>
+  Source to import. Can be a WAD file/directory, `.zip`/`.fantome` archive, or existing mod folder.
+</ParamField>
+
+<ParamField path="dst_mod_dir" type="string" required>
+  Destination mod folder where the imported content will be written.
+</ParamField>
+
+## Source Formats
+
+The `import` command accepts multiple source formats:
+
+### WAD File or Directory
+
+- `.wad` or `.wad.client` file
+- Directory containing unpacked WAD structure (`data`, `data2`, `levels`, `assets`, or `OBSIDIAN_PACKED_MAPPING.txt`)
+
+### Archive Files
+
+- `.zip` - Standard ZIP archive
+- `.fantome` - League of Legends mod archive format
+
+### Existing Mod Folder
+
+- Directory containing `META/info.json`
+
+## Flags
+
+<ParamField path="--game" type="string">
+  Path to the game folder. When applicable, rebase/optimize against the game.
+</ParamField>
+
+<ParamField path="--noTFT" type="boolean">
+  Exclude TFT assets when indexing the game.
+</ParamField>
+
+## Behavior
+
+The import behavior varies based on the source format:
+
+### WAD Source
+
+1. Creates a minimal `META/info.json`
+2. Adds the WAD (with optional rebasing if `--game` is provided)
+3. Writes to `dst_mod_dir`
+
+### ZIP/Fantome Archive
+
+1. Unzips the archive
+2. Optimizes like the `copy` command
+3. Writes to `dst_mod_dir`
+
+### Existing Mod Folder
+
+1. Optimizes like the `copy` command
+2. Writes to `dst_mod_dir`
+
+## Detection Logic
+
+The command detects WAD sources by:
+- Filename extension (`.wad`, `.wad.client`)
+- Directory structure containing:
+  - `data/`
+  - `data2/`
+  - `levels/`
+  - `assets/`
+  - `OBSIDIAN_PACKED_MAPPING.txt`
+
+## Examples
+
+### Import from Fantome archive with optimization
+
+```bash
+mod-tools import ./SomeMod.fantome ./SomeMod --game:/games/LoL
+```
+
+This command:
+- Imports the Fantome archive
+- Optimizes against the game at `/games/LoL`
+- Creates standardized mod folder at `./SomeMod`
+
+### Import from unpacked WAD
+
+```bash
+mod-tools import ./unpacked-wad ./ImportedFromWad
+```
+
+This command:
+- Creates a mod folder from unpacked WAD directory
+- Generates minimal `META/info.json`
+- No game optimization
+
+### Import ZIP archive without TFT assets
+
+```bash
+mod-tools import ./MyMod.zip ./MyMod --noTFT
+```
+
+This command:
+- Imports and unzips the archive
+- Excludes TFT assets during processing
+- Creates optimized mod folder
+
+### Convert existing mod with optimization
+
+```bash
+mod-tools import ./OldMod ./OptimizedMod --game:/games/LoL --noTFT
+```
+
+This command:
+- Imports existing mod folder
+- Optimizes against game files
+- Excludes TFT assets
+- Creates new optimized version
+
+## Use Cases
+
+- **Format conversion**: Convert between different mod formats
+- **Mod standardization**: Normalize mod structure for consistency
+- **Archive extraction**: Unpack and optimize archived mods
+- **WAD integration**: Convert raw WAD files into proper mod folders
+- **Optimization**: Import and optimize mods in a single step

@@ -1,0 +1,93 @@
+---
+title: 'export Command'
+description: 'Export a mod folder to a single archive after optimizing it.'
+---
+
+## Syntax
+
+```bash
+mod-tools export <src_mod_dir> <dst_archive> [--game:<path>] [--noTFT]
+```
+
+## Arguments
+
+<ParamField path="src_mod_dir" type="string" required>
+  Source mod folder (must contain `META/info.json`).
+</ParamField>
+
+<ParamField path="dst_archive" type="string" required>
+  Output archive path (e.g., `MyMod.zip` or `MyMod.fantome`).
+</ParamField>
+
+## Flags
+
+<ParamField path="--game" type="string">
+  Path to the game folder. Optimize using rebase against the game before zipping.
+</ParamField>
+
+<ParamField path="--noTFT" type="boolean">
+  Exclude TFT assets when indexing the game.
+</ParamField>
+
+## Behavior
+
+The `export` command performs the following operations:
+
+1. Internally runs the same optimization as the `copy` command
+2. Zips the optimized result to `<dst_archive>`
+
+### Optimization Process
+
+- Resolves internal conflicts
+- Normalizes WAD structure
+- If `--game` is provided, rebases against game files to reduce size
+- Copies metadata files
+
+### Archive Formats
+
+Supported archive extensions:
+- `.zip` - Standard ZIP archive
+- `.fantome` - League of Legends mod archive format
+
+## Examples
+
+### Export with game optimization
+
+```bash
+mod-tools export ./MyMod ./MyMod.zip --game:/games/LoL
+```
+
+This command:
+- Optimizes `MyMod` by rebasing against the game
+- Strips unmodified entries
+- Creates `MyMod.zip` archive with optimized content
+
+### Export to Fantome format
+
+```bash
+mod-tools export ./MyMod ./MyMod.fantome --noTFT
+```
+
+This command:
+- Optimizes `MyMod` without game rebasing
+- Excludes TFT assets during processing
+- Creates `MyMod.fantome` archive
+
+### Export without optimization
+
+```bash
+mod-tools export ./MyMod ./MyMod-raw.zip
+```
+
+This command:
+- Exports `MyMod` with minimal optimization
+- No game rebasing or TFT filtering
+- Creates a basic archive of the mod
+
+## Use Cases
+
+- **Mod distribution**: Package mods for sharing with other players
+- **Size optimization**: Create smaller archives by removing unmodified files
+- **Format conversion**: Convert between ZIP and Fantome formats
+- **Backup creation**: Archive mods for safekeeping
+- **Release preparation**: Create final, optimized versions for release

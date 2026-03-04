@@ -1,0 +1,62 @@
+---
+title: 'CLI Tools Overview'
+description: 'A small CLI for working with CSLOL-style mods and WADs: importing/exporting, copying/optimizing, building overlays, and running the live overlay patcher.'
+---
+
+## mod-tools CLI
+
+The mod-tools CLI provides a comprehensive set of commands for working with CSLOL-style mods and WAD files. It supports importing/exporting mods, copying and optimizing mod folders, building overlays, and running the live overlay patcher.
+
+## General Usage
+
+```bash
+mod-tools <command> [args] [flags]
+```
+
+## Available Commands
+
+The CLI provides six main commands:
+
+- **`addwad`** - Add a WAD (file or directory) into a mod folder
+- **`copy`** - Optimize and copy a mod folder, resolving internal conflicts
+- **`export`** - Export a mod folder to a single archive after optimizing it
+- **`import`** - Import various mod inputs into a standardized mod folder
+- **`mkoverlay`** - Build an overlay from multiple mods against the game's WADs
+- **`runoverlay`** - Run the overlay with the live patcher
+
+## Common Flags
+
+<ParamField path="--game" type="string">
+  Path to the game folder. Enables rebasing against the game WADs and filtering.
+</ParamField>
+
+<ParamField path="--noTFT" type="boolean">
+  Exclude Teamfight Tactics assets when indexing game WADs (skips `map21` and `map22`).
+</ParamField>
+
+## Path Handling
+
+Unless otherwise noted, paths may be absolute or relative. Commands log progress and exit with non-zero status on error.
+
+## Format Notes
+
+### WAD Source
+
+A "WAD source" can be:
+- A `.wad` or `.wad.client` file
+- A directory that looks like an unpacked WAD (contains `data`, `data2`, `levels`, `assets`, or `OBSIDIAN_PACKED_MAPPING.txt`)
+
+### Mod Folder
+
+A "Mod folder" must contain:
+- `META/info.json` - Mod metadata
+- `WAD/` directory (after optimization)
+
+## Exit Codes and Logging
+
+- **Success**: Prints `Done!` and exits with code 0
+- **Error**: Prints a backtrace and error message to stderr, exits with non-zero code
+
+## TFT Filtering
+
+The `--noTFT` flag excludes maps named `map21` and `map22` when indexing the game, reducing install size for Summoner's Rift-only mods.

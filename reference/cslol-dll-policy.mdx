@@ -1,0 +1,124 @@
+---
+title: CSLOL DLL Policy
+description: Distribution policy and requirements for cslol-dll.dll
+---
+
+## Overview
+
+The **CSLOL DLL License Addendum** governs the distribution and use of `cslol-dll.dll`, the core injection module that enables League of Legends mod installation.
+
+<Warning>
+**Version 1.1 | Effective: 2026-01-01**
+
+This policy applies to `cslol-dll.dll` and all derivative binaries. It takes precedence over the project's GPL-3.0 license for the DLL specifically.
+</Warning>
+
+## Purpose
+
+This policy ensures:
+
+1. **Accountability** through public-trust code signing
+2. **Technical enforcement** against prohibited content ("Skinhacking")
+
+## For Developers: Distribution Requirements
+
+If you want to redistribute the DLL or use it in your own launcher, you **must** comply with these requirements:
+
+### 1. Code Signing (Mandatory)
+
+<Warning>
+You **cannot** redistribute the DLL with the original League Toolkit signature.
+</Warning>
+
+You must:
+
+- **Re-sign** the DLL using a publicly trusted code-signing certificate (e.g., DigiCert, Certum)
+- Include a **trusted timestamp** (RFC 3161) from a trusted timestamp authority
+- Use a certificate that identifies you (organization or individual)
+
+### 2. Transparency Requirements
+
+You must publish:
+
+- Your certificate subject (publisher identity)
+- Certificate SHA-256 fingerprint OR the public certificate chain
+- The DLL's SHA-256 hash for each release
+- This information should be in your "About" page, documentation, or release notes
+
+<Note>
+The licensor may request the exact signed DLL release artifact to verify compliance.
+</Note>
+
+### 3. Anti-Skinhacking Enforcement
+
+<Warning>
+You **must** implement launcher-level blocking to prevent installation/injection of prohibited content.
+</Warning>
+
+#### Prohibited Content
+
+Your launcher must block:
+
+**Competitive Integrity Violations:**
+- Visual indicators of ability ranges
+- Hitbox visualization
+- Any modifications providing unfair gameplay advantages
+
+**Paid Content Replication:**
+- Direct replication of purchasable League of Legends skins
+- Content designed to replicate paid cosmetic assets
+- Ports that functionally replicate paid content without substantial transformation
+
+#### Permitted Creative Use
+
+Creative derivative works may be allowed when:
+- The content is substantially transformed
+- The work is original in nature
+- The intent is not to replicate purchasable content
+- Proper attribution is provided
+
+### 4. Restrictions
+
+<Warning>
+You must **NOT**:
+- Modify, reverse engineer, or patch the DLL
+- Create derivative binaries
+- Bypass or disable technical controls
+- Tamper with the DLL in any way
+</Warning>
+
+## Termination
+
+**Any violation immediately terminates your permission to distribute the DLL.**
+
+Upon termination:
+- You must cease all distribution and use
+- You must remove hosted copies under your control
+
+## Enforcement
+
+The League Toolkit Organization may:
+- Submit DMCA takedown notices
+- Pursue legal claims
+- Report violations to Riot Games
+- Cooperate with Riot on enforcement actions
+
+## No Endorsement
+
+<Note>
+Distribution or use of the DLL does not imply endorsement by League Toolkit or Riot Games.
+
+No trademark rights are granted.
+</Note>
+
+## Disclaimer
+
+THE DLL IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND. The licensor is not liable for any damages arising from the DLL or this policy.
+
+## Full Policy Text
+
+The complete CSLOL DLL License Addendum is available at: [LICENSE-CSLOL.md](https://github.com/LeagueToolkit/cslol-manager/blob/master/LICENSE-CSLOL.md)
+
+## Contact
+
+Compliance inquiries: 0xcrauzer@proton.me

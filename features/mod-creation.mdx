@@ -1,0 +1,453 @@
+---
+title: Mod Creation
+description: Create custom mods from RAW folders and edit mod metadata
+---
+
+## Overview
+
+cslol-manager includes a powerful mod creation suite that allows you to:
+
+- Create mods from RAW (unpacked) folders
+- Add WAD files to existing mods
+- Edit mod metadata (name, version, author, description)
+- Set custom preview images
+- Manage mod files and structure
+
+## Creating a New Mod
+
+### From the UI
+
+<Steps>
+  <Step title="Click 'Create New Mod'">
+    Click the **+** (plus) button in the bottom toolbar of the mods view.
+  </Step>
+  
+  <Step title="Enter Metadata">
+    Fill in the mod information:
+    - **Name**: Mod display name (required, 3-50 characters)
+    - **Author**: Your name or username (required)
+    - **Version**: Semantic version (e.g., 1.0.0)
+    - **Description**: Brief description of your mod
+    - **Home**: Homepage or update URL
+    - **Heart**: Support/donation link
+  </Step>
+  
+  <Step title="Add Preview Image">
+    Click "Select Image" to choose a PNG preview image (optional but recommended).
+  </Step>
+  
+  <Step title="Save Mod">
+    Click **Save** to create the mod with metadata. The mod editor will open automatically.
+  </Step>
+  
+  <Step title="Add Files">
+    In the "Files" tab, add WAD files or RAW folders to your mod.
+  </Step>
+</Steps>
+
+```qml
+// From main.qml:224-228
+onCreateNewMod: {
+    if (checkGamePath()) {
+        cslolDialogNewMod.open()
+        cslolDialogNewMod.clear()
+    }
+}
+```
+
+### Metadata Structure
+
+Mod metadata is stored in `META/info.json`:
+
+```json
+{
+  "Name": "My Custom Skin",
+  "Version": "1.0.0",
+  "Author": "YourName",
+  "Description": "A beautiful custom skin for Lux",
+  "Home": "https://example.com/my-mod",
+  "Heart": "https://ko-fi.com/yourname"
+}
+```
+
+Required fields are validated:
+
+```cpp
+// From CSLOLToolsImpl.cpp:63-83
+static QJsonObject modInfoFixup(QString modName, QJsonObject object) {
+    if (!object.contains("Name") || !object["Name"].isString() 
+        || object["Name"].toString().isEmpty()) {
+        object["Name"] = modName;
+    }
+    if (!object.contains("Version") || !object["Version"].isString()) {
+        object["Version"] = "0.0.0";
+    }
+    if (!object.contains("Author") || !object["Author"].isString()) {
+        object["Author"] = "UNKNOWN";
+    }
+    if (!object.contains("Description") || !object["Description"].isString()) {
+        object["Description"] = "";
+    }
+    if (!object.contains("Home") || !object["Home"].isString()) {
+        object["Home"] = "";
+    }
+    if (!object.contains("Heart") || !object["Heart"].isString()) {
+        object["Heart"] = "";
+    }
+    return object;
+}
+```
+
+### Field Validation
+
+<AccordionGroup>
+  <Accordion title="Name & Author Validation">
+    ```qml
+    // From main.qml:48
+    property var validName: new RegExp(/[\p{L}\p{M}\p{Pd}\p{Z}\p{N}\w]{3,50}/u)
+    ```
+    - 3-50 characters
+    - Unicode letters, numbers, hyphens, spaces allowed
+    - Required fields
+  </Accordion>
+  
+  <Accordion title="Version Validation">
+    ```qml
+    // From main.qml:49
+    property var validVersion: new RegExp(/([0-9]{1,3})(\.[0-9]{1,3}){0,3}/)
+    ```
+    - Semantic versioning format: `major.minor.patch`
+    - Each component: 1-3 digits
+    - Examples: `1.0`, `2.5.1`, `1.0.0.0`
+  </Accordion>
+  
+  <Accordion title="URL Validation">
+    ```qml
+    // From main.qml:50
+    property var validUrl: new RegExp(/^(http(s)?:\/\/).+$/u)
+    ```
+    - Must start with `http://` or `https://`
+    - Optional fields (Home, Heart)
+  </Accordion>
+</AccordionGroup>
+
+## Editing Existing Mods
+
+### Opening the Mod Editor
+
+Click the **Edit** button (pencil icon) next to any mod in your list:
+
+```qml
+// From CSLOLModsView.qml:378-388
+ToolButton {
+    text: "\uf044"  // FontAwesome pencil icon
+    font.family: "FontAwesome"
+    onClicked: {
+        let modName = model.FileName
+        cslolModsView.modEdit(modName)
+    }
+    CSLOLToolTip {
+        text: qsTr("Edit this mod")
+        visible: parent.hovered
+    }
+}
+```
+
+### Mod Editor Interface
+
+The editor has two tabs:
+
+#### Info Tab
+
+Edit metadata and preview image:
+
+```qml
+// From CSLOLModInfoEdit.qml:20-40
+function getInfoData() {
+    if (fieldName.text === "") {
+        window.showUserError("Edit mod", "Mod name can't be empty!")
+        return
+    }
+    let name = fieldName.text == "" ? "UNKNOWN" : fieldName.text
+    let author = fieldAuthor.text == "" ? "UNKNOWN" : fieldAuthor.text
+    let version = fieldVersion.text == "" ? "1.0" : fieldVersion.text
+    let description = fieldDescription.text
+    let home = fieldHome.text
+    let heart = fieldHeart.text
+    let info = {
+        "Name": name,
+        "Author": author,
+        "Version": version,
+        "Description": description,
+        "Home": home,
+        "Heart": heart,
+    }
+    return info
+}
+```
+
+Click **Apply** to save changes:
+
+```cpp
+// Signal: changeModInfo(QString fileName, QJsonObject infoData, QString image)
+onChangeInfoData: function(infoData, image) {
+    cslolTools.changeModInfo(fileName, infoData, image)
+}
+```
+
+#### Files Tab
+
+Manage WAD files in your mod:
+
+- **View files**: List of all `.wad.client` files in the mod
+- **Remove files**: Click the X button next to a file
+- **Add WAD**: Click "Add WAD" to select a `.wad` file
+- **Add RAW**: Click "Add RAW" to select an unpacked folder
+- **Drag & Drop**: Drag files directly into the files list
+- **Browse**: Opens the mod's installation folder in your file explorer
+
+```qml
+// From CSLOLDialogEditMod.qml:115-122
+ToolButton {
+    text: "\uf00d"  // Remove icon
+    font.family: "FontAwesome"
+    onClicked: {
+        let modName = model.Name
+        cslolDialogEditMod.removeWads([modName])
+    }
+}
+```
+
+## Adding Files to Mods
+
+### Adding WAD Files
+
+<Steps>
+  <Step title="Open Files Tab">
+    Switch to the "Files" tab in the mod editor.
+  </Step>
+  
+  <Step title="Choose Method">
+    - Click "Add WAD" button, or
+    - Drag a `.wad` file into the files list
+  </Step>
+  
+  <Step title="Configure Options">
+    **Remove Unknown**: If checked, removes files not present in the base game (recommended).
+    
+    Uncheck if you're adding completely new assets to the game.
+  </Step>
+</Steps>
+
+```qml
+// From CSLOLDialogEditMod.qml:165-175
+CheckBox {
+    id: checkBoxRemoveUnknownNames
+    checkable: true
+    checked: true
+    text: qsTr("Remove unknown")
+    Layout.leftMargin: 5
+    CSLOLToolTip {
+        text: qsTr("Uncheck this if you are adding new files to game!")
+        visible: parent.hovered
+    }
+}
+```
+
+**Signal**: `addWad(var wad, bool removeUnknownNames)` → `CSLOLTools.addModWad(modFileName, wad, removeUnknownNames)`
+
+### Adding RAW Folders
+
+RAW folders are unpacked WAD directories containing game assets:
+
+<Steps>
+  <Step title="Prepare RAW Folder">
+    Ensure your folder contains unpacked game files (e.g., from WAD extraction tools).
+  </Step>
+  
+  <Step title="Click 'Add RAW'">
+    In the Files tab, click the "Add RAW" button.
+  </Step>
+  
+  <Step title="Select Folder">
+    Choose the RAW folder containing your custom assets.
+  </Step>
+  
+  <Step title="Processing">
+    cslol-manager will:
+    - Scan the folder structure
+    - Rebase against the game WADs (if game path is set)
+    - Strip unmodified files
+    - Create optimized `.wad.client` files
+    - Add them to the mod's `WAD/` directory
+  </Step>
+</Steps>
+
+```qml
+// From CSLOLDialogEditMod.qml:211-216
+CSLOLDialogNewModRAWFolder {
+    id: dialogRawFolder
+    onAccepted: {
+        cslolDialogEditMod.addWad(CSLOLUtils.fromFile(folder), checkBoxRemoveUnknownNames.checked)
+    }
+}
+```
+
+## CLI: mod-tools
+
+For advanced users, cslol-manager includes a CLI tool for mod operations:
+
+### Import Command
+
+Create a mod from various sources:
+
+```bash
+mod-tools import <src> <dst_mod_dir> [--game:<path>] [--noTFT]
+```
+
+**Source types**:
+- WAD file or directory
+- `.zip` or `.fantome` archive  
+- Existing mod folder
+
+**Example**:
+```bash
+mod-tools import ./unpacked-wad ./MyNewMod --game:"C:/Riot Games/League of Legends"
+```
+
+### Add WAD Command
+
+Add a WAD to an existing mod:
+
+```bash
+mod-tools addwad <src_wad> <dst_mod_dir> [--game:<path>] [--removeUNK]
+```
+
+**Example**:
+```bash
+mod-tools addwad ./champion.wad ./MySkin --game:"C:/Riot Games/League of Legends" --removeUNK
+```
+
+### Copy/Optimize Command
+
+Optimize a mod (remove conflicts, rebase):
+
+```bash
+mod-tools copy <src_mod_dir> <dst_mod_dir> [--game:<path>]
+```
+
+**Example**:
+```bash
+# In-place optimization
+mod-tools copy ./MySkin ./MySkin --game:"C:/Riot Games/League of Legends"
+```
+
+<Info>
+  See the [mod-tools CLI documentation](/cli/overview) for complete command reference.
+</Info>
+
+## Preview Images
+
+Preview images are stored as `META/image.png`:
+
+```cpp
+// From CSLOLToolsImpl.cpp:142-157
+QString CSLOLToolsImpl::modImageSet(QString modName, QString image) {
+    QDir(prog_ + "/installed/" + modName).mkpath("META");
+    auto path = prog_ + "/installed/" + modName + "/META/image.png";
+    if (image.isEmpty()) {
+        QFile::remove(path);
+        return "";
+    }
+    if (path == image) return path;
+    if (QFile src(image); src.open(QIODevice::ReadOnly)) {
+        if (QFile dst(path); dst.open(QIODevice::WriteOnly)) {
+            dst.write(src.readAll());
+            return path;
+        }
+    }
+    return "";
+}
+```
+
+**Recommendations**:
+- Format: PNG
+- Resolution: 512x512 or higher
+- Aspect ratio: Square or 16:9
+- File size: < 1 MB for faster loading
+
+## Mod Directory Structure
+
+Completed mods follow this structure:
+
+```
+Mod Name V1.0 by Author/
+├── META/
+│   ├── info.json          # Required metadata
+│   └── image.png          # Optional preview image
+└── WAD/
+    ├── champion.wad.client
+    ├── skin.wad.client
+    └── animations.wad.client
+```
+
+<Warning>
+  - `META/info.json` is **required** for the mod to be recognized
+  - WAD files must have the `.wad.client` extension
+  - Folder name is auto-generated: `{Name} V{Version} by {Author}`
+</Warning>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use semantic versioning">
+    Follow `major.minor.patch` format:
+    - **Major**: Breaking changes or complete overhauls
+    - **Minor**: New features, additional skins
+    - **Patch**: Bug fixes, small tweaks
+  </Accordion>
+  
+  <Accordion title="Set the game path">
+    Setting your League of Legends installation path enables:
+    - Automatic file rebasing (strips unmodified files)
+    - Smaller mod file sizes
+    - Faster mod loading
+    - Better compatibility
+  </Accordion>
+  
+  <Accordion title="Test before sharing">
+    Always test your mod in-game before exporting and sharing:
+    1. Create the mod
+    2. Enable it in a test profile
+    3. Launch the game and verify it works
+    4. Check for conflicts with other mods
+    5. Export to `.fantome` only after testing
+  </Accordion>
+  
+  <Accordion title="Include clear descriptions">
+    Write helpful descriptions that include:
+    - What the mod changes
+    - Which champions/items are affected
+    - Known issues or limitations
+    - Credits to asset creators
+  </Accordion>
+  
+  <Accordion title="Keep WADs organized">
+    Use descriptive WAD filenames that match their base mounts:
+    - `ezreal_base_tx_cm.wad.client` (champion textures)
+    - `lux_skin15.wad.client` (specific skin)
+    - Not: `mymod.wad.client` (unclear purpose)
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Fantome Format" icon="file-archive" href="/features/fantome-format">
+    Learn about the Fantome mod format specification
+  </Card>
+  
+  <Card title="Export Mods" icon="file-export" href="/features/mod-management#export-mod">
+    Export your mod to share with others
+  </Card>
+</CardGroup>

@@ -1,0 +1,80 @@
+---
+title: 'addwad Command'
+description: 'Add a WAD (file or directory) into a mod folder, optionally rebasing against the game to strip unmodified entries and align file naming.'
+---
+
+## Syntax
+
+```bash
+mod-tools addwad <src_wad> <dst_mod_dir> [--game:<path>] [--noTFT] [--removeUNK]
+```
+
+## Arguments
+
+<ParamField path="src_wad" type="string" required>
+  WAD file or directory to add. Can be a `.wad`/`.wad.client` file or a directory containing unpacked WAD structure.
+</ParamField>
+
+<ParamField path="dst_mod_dir" type="string" required>
+  Target mod folder (must contain `META/info.json`). WAD will be written under `WAD/` directory.
+</ParamField>
+
+## Flags
+
+<ParamField path="--game" type="string">
+  Path to the game folder. Rebases against game WADs; output filename is aligned to the base mount. Also strips unmodified entries.
+</ParamField>
+
+<ParamField path="--noTFT" type="boolean">
+  While indexing the game, exclude TFT assets (`map21`, `map22`).
+</ParamField>
+
+<ParamField path="--removeUNK" type="boolean">
+  When rebasing, also drop entries not present in the base (unknown to the game).
+</ParamField>
+
+## Behavior
+
+### Without `--game` flag
+
+The WAD is added directly and, if needed, renamed to end with `.wad.client`.
+
+### With `--game` flag
+
+When the `--game` flag is provided, the tool:
+1. Finds the base mount for the WAD
+2. Optionally removes unknown entries (if `--removeUNK` is set)
+3. Always removes unmodified entries
+4. Writes the optimized WAD to the `WAD/` directory
+
+## Examples
+
+### Add WAD with game rebasing and optimization
+
+```bash
+mod-tools addwad ./my-changes.wad ./MyMod --game:/games/LoL --noTFT --removeUNK
+```
+
+This command:
+- Adds `my-changes.wad` to the `MyMod` folder
+- Rebases against the game at `/games/LoL`
+- Excludes TFT assets during indexing
+- Removes unknown entries not present in the base game
+
+### Add unpacked WAD directory
+
+```bash
+mod-tools addwad ./unpacked-wad/ ./MyMod
+```
+
+This command:
+- Adds the unpacked WAD directory to `MyMod`
+- No game rebasing or optimization
+- WAD is renamed to `.wad.client` if needed
+
+## Use Cases
+
+- **Adding custom assets**: Add new or modified game assets to an existing mod
+- **Optimizing mod size**: Use `--game` flag to strip unmodified files
+- **Cleaning unknown assets**: Use `--removeUNK` to ensure only game-recognized files are included
+- **Converting unpacked WADs**: Import unpacked WAD directories into proper mod structure

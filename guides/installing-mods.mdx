@@ -1,0 +1,148 @@
+---
+title: Installing Mods
+description: Step-by-step guide to install .fantome mods in cslol-manager
+---
+
+Learn how to install custom skins and mods for League of Legends using the Fantome mod format.
+
+## Prerequisites
+
+Before installing mods, ensure you have:
+
+- **cslol-manager** installed and running
+- **League of Legends** game path configured
+- Downloaded `.fantome` or `.zip` mod files from trusted sources
+
+## Installation Methods
+
+### Method 1: Install from Fantome/Zip File
+
+This is the most common method for installing pre-packaged mods.
+
+<Steps>
+  <Step title="Open the File Dialog">
+    In cslol-manager, click the **Install Mod** button or use the file menu to open the mod installation dialog.
+    
+    The application accepts both `.fantome` and `.zip` file formats.
+  </Step>
+
+  <Step title="Select Your Mod File">
+    Browse to the location where you downloaded your mod file and select it.
+    
+    Supported formats:
+    - `.fantome` - Standard Fantome mod format
+    - `.zip` - Compressed mod archives
+  </Step>
+
+  <Step title="Wait for Import Process">
+    The manager will automatically:
+    - Extract the mod contents
+    - Validate the mod structure (checks for `META/info.json`)
+    - Optimize against game files to reduce size
+    - Remove unmodified entries when rebasing
+    
+    You'll see status updates during this process:
+    - `Installing Mod`
+    - `Done!` when complete
+  </Step>
+
+  <Step title="Verify Installation">
+    Once installed, the mod will appear in your mod list with:
+    - Mod name, version, and author information
+    - Preview image (if included)
+    - Installation status
+    
+    The mod is now ready to be added to a profile.
+  </Step>
+</Steps>
+
+### Method 2: Install from RAW Folder
+
+For advanced users working with unpacked mod files.
+
+<Steps>
+  <Step title="Prepare Your Folder">
+    Ensure your folder contains:
+    - `META/info.json` with mod metadata
+    - `WAD/` directory with `.wad.client` files
+    - Optional: `META/image.png` for preview
+  </Step>
+
+  <Step title="Use Import Command">
+    The mod-tools CLI will detect the folder structure and import it:
+    
+    ```bash
+    mod-tools import ./MyModFolder ./installed/MyMod --game:/path/to/league
+    ```
+  </Step>
+
+  <Step title="Check Results">
+    The imported mod will be optimized and appear in the installed mods directory.
+  </Step>
+</Steps>
+
+## What Happens During Installation
+
+### Automatic Optimization
+
+When you install a mod, cslol-manager automatically:
+
+1. **Rebases against game files** - Compares mod files with original game WADs
+2. **Strips unmodified entries** - Removes files identical to the base game
+3. **Filters TFT assets** - Excludes Teamfight Tactics files if the blacklist option is enabled
+4. **Validates structure** - Ensures the mod has required metadata
+
+### File Structure
+
+Installed mods are stored in:
+
+```
+cslol-manager/
+└── installed/
+    └── ModName V1.0 by Author/
+        ├── META/
+        │   ├── info.json      # Mod metadata
+        │   └── image.png      # Preview image (optional)
+        └── WAD/
+            └── *.wad.client   # Game asset files
+```
+
+## Common Installation Issues
+
+### "Already exists" Error
+
+If you see this error:
+- A mod with the same name is already installed
+- Delete the existing mod first, or
+- Rename the new mod file before installing
+
+### Missing mod-tools.exe
+
+If installation fails with this error:
+- Verify your anti-virus isn't blocking `cslol-tools/mod-tools.exe`
+- Reinstall cslol-manager to restore missing files
+- Check the `log.txt` file for detailed error information
+
+### Import Failed
+
+If the import process fails:
+- Ensure the mod file isn't corrupted
+- Verify the mod is compatible with your League version
+- Check that the League of Legends path is correctly configured
+
+## Next Steps
+
+After installing mods:
+
+<CardGroup cols={2}>
+  <Card title="Managing Profiles" icon="layer-group" href="/guides/managing-profiles">
+    Learn how to organize mods into profiles
+  </Card>
+  <Card title="Creating Mods" icon="wand-magic-sparkles" href="/guides/creating-mods">
+    Create your own custom mods
+  </Card>
+</CardGroup>
+
+<Note>
+  **Performance Tip**: Enable the TFT blacklist option in settings if you only play Summoner's Rift. This reduces mod size and overlay build time by excluding Teamfight Tactics assets.
+</Note>

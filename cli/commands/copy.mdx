@@ -1,0 +1,83 @@
+---
+title: 'copy Command'
+description: 'Optimize and copy a mod folder, resolving internal conflicts and optionally rebasing against the game. Useful for in-place optimization.'
+---
+
+## Syntax
+
+```bash
+mod-tools copy <src_mod_dir> <dst_mod_dir> [--game:<path>] [--noTFT]
+```
+
+## Arguments
+
+<ParamField path="src_mod_dir" type="string" required>
+  Source mod folder (must contain `META/info.json`).
+</ParamField>
+
+<ParamField path="dst_mod_dir" type="string" required>
+  Destination mod folder. If it exists, it will be replaced.
+</ParamField>
+
+## Flags
+
+<ParamField path="--game" type="string">
+  Path to the game folder. Rebase mod WADs against the game to reduce deltas.
+</ParamField>
+
+<ParamField path="--noTFT" type="boolean">
+  Exclude TFT assets when indexing the game.
+</ParamField>
+
+## Behavior
+
+The `copy` command performs the following operations:
+
+1. Resolves conflicts inside the mod
+2. Writes normalized WADs into `dst_mod_dir`
+3. Copies `META/*` files to the destination
+
+### In-Place Optimization
+
+If `src_mod_dir == dst_mod_dir`, the command performs a safe in-place optimization using a temporary directory.
+
+### With `--game` flag
+
+When rebasing against the game:
+- Reduces file deltas by aligning with base game assets
+- Strips unmodified entries
+- Optimizes mod size
+
+## Examples
+
+### Copy and optimize with game rebasing
+
+```bash
+mod-tools copy ./MyMod ./MyMod.optimized --game:/games/LoL
+```
+
+This command:
+- Copies `MyMod` to `MyMod.optimized`
+- Rebases against the game at `/games/LoL`
+- Resolves internal conflicts
+- Reduces mod size by stripping unmodified files
+
+### In-place optimization
+
+```bash
+mod-tools copy ./MyMod ./MyMod --noTFT
+```
+
+This command:
+- Optimizes `MyMod` in place using a temporary directory
+- Excludes TFT assets during processing
+- Resolves any internal conflicts
+- Normalizes WAD structure
+
+## Use Cases
+
+- **Mod optimization**: Reduce mod size by removing redundant files
+- **Conflict resolution**: Automatically resolve internal file conflicts
+- **Format normalization**: Ensure mod follows proper structure
+- **In-place cleanup**: Optimize mods without creating duplicates
+- **Distribution preparation**: Create clean, optimized versions for sharing

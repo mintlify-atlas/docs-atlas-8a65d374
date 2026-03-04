@@ -1,0 +1,363 @@
+---
+title: Managing Profiles
+description: How to create, switch, and manage mod profiles in cslol-manager
+---
+
+Profiles allow you to organize mods into different configurations and quickly switch between them without reinstalling.
+
+## What Are Profiles?
+
+A profile is a collection of enabled mods that are built into an overlay and applied to the game. You can have multiple profiles for different purposes:
+
+- **Ranked Play** - Performance-focused mods only
+- **Custom Skins** - All your visual customizations
+- **Experimental** - Testing new or unstable mods
+- **Champion-Specific** - Mods for specific champions you play
+
+## Profile System Overview
+
+Profiles in cslol-manager work through:
+
+1. **Profile files** - Stored as `.profile` files in the `profiles/` directory
+2. **Overlay building** - Selected mods are merged into a game overlay
+3. **Active profile** - One profile can be running at a time
+4. **Current profile** - Tracked in `current.profile` file
+
+## Creating a Profile
+
+<Steps>
+  <Step title="Open New Profile Dialog">
+    Click the **New Profile** button in the toolbar or profile dropdown.
+  </Step>
+
+  <Step title="Enter Profile Name">
+    Choose a descriptive name for your profile.
+    
+    <Note>
+      Profile names are case-sensitive and should be unique. If left empty, the profile will be named "Default Profile".
+    </Note>
+  </Step>
+
+  <Step title="Select Mods">
+    Choose which mods to include in this profile:
+    - Check the box next to each mod you want to enable
+    - You can select multiple mods
+    - Mod order determines conflict resolution priority
+  </Step>
+
+  <Step title="Save Profile">
+    Click **Save** to create the profile.
+    
+    The profile will be saved as `profiles/ProfileName.profile`.
+  </Step>
+</Steps>
+
+## Loading a Profile
+
+To switch to a different profile:
+
+<Steps>
+  <Step title="Select Profile">
+    Choose a profile from the profile dropdown menu.
+    
+    Available profiles are automatically discovered from the `profiles/` directory.
+  </Step>
+
+  <Step title="Wait for Profile Load">
+    The manager will:
+    - Save the current profile as active
+    - Read the selected profile's mod list
+    - Update the UI to show enabled mods
+    
+    Status: `Load profile` → `Done!`
+  </Step>
+
+  <Step title="Build and Run (Optional)">
+    To apply the profile to the game:
+    1. Click **Run** or **Save & Run**
+    2. Wait for overlay building
+    3. Launch League of Legends
+  </Step>
+</Steps>
+
+## Running a Profile
+
+Running a profile applies the selected mods to your game.
+
+<Steps>
+  <Step title="Configure Profile Options">
+    Before running, you can enable:
+    
+    <ResponseField name="Skip Conflict Check" type="boolean">
+      Ignore mod conflicts and let later mods override earlier ones.
+      
+      Use the `--ignoreConflict` flag internally.
+    </ResponseField>
+    
+    <ResponseField name="Debug Patcher" type="boolean">
+      Enable verbose logging for troubleshooting patcher issues.
+      
+      Passes `debugpatcher` option to the overlay runner.
+    </ResponseField>
+  </Step>
+
+  <Step title="Build the Overlay">
+    Click **Save & Run** to start the build process.
+    
+    The manager executes:
+    ```bash
+    mod-tools mkoverlay ./installed ./profiles/ProfileName \
+      --game:/path/to/league \
+      --mods:Mod1/Mod2/Mod3 \
+      --noTFT \
+      --ignoreConflict
+    ```
+    
+    This creates optimized overlay WAD files in `profiles/ProfileName/`.
+  </Step>
+
+  <Step title="Start the Patcher">
+    Once the overlay is built, the patcher automatically starts:
+    ```bash
+    mod-tools runoverlay ./profiles/ProfileName \
+      ./profiles/ProfileName.config \
+      --game:/path/to/league
+    ```
+    
+    You'll see status updates:
+    - `Starting patcher...`
+    - `Status: Running`
+    - `[DLL]` messages from the injection process
+  </Step>
+
+  <Step title="Launch League of Legends">
+    With the patcher running:
+    1. Start the League client normally
+    2. The patcher will inject mods when you enter a game
+    3. Check the status indicator (green = running, patching, or idle)
+  </Step>
+</Steps>
+
+## Stopping a Running Profile
+
+To stop the patcher and disable mods:
+
+<Steps>
+  <Step title="Click Stop">
+    Click the **Stop** button while a profile is running.
+  </Step>
+
+  <Step title="Wait for Shutdown">
+    The patcher receives a shutdown signal and exits gracefully.
+    
+    Status changes: `Running` → `Stopping` → `Idle`
+  </Step>
+</Steps>
+
+<Warning>
+  Don't force-close cslol-manager while a profile is running. Always use the **Stop** button to ensure clean shutdown.
+</Warning>
+
+## Editing Profiles
+
+### Modify Enabled Mods
+
+<Steps>
+  <Step title="Load the Profile">
+    Select the profile you want to edit from the dropdown.
+  </Step>
+
+  <Step title="Change Mod Selection">
+    Check or uncheck mods in the mod list.
+  </Step>
+
+  <Step title="Save Changes">
+    Click **Save Profile** to update the `.profile` file.
+    
+    The profile is immediately updated and can be run with the new configuration.
+  </Step>
+</Steps>
+
+### Rename a Profile
+
+To rename a profile:
+
+1. Navigate to the `profiles/` directory
+2. Rename the `.profile` file
+3. Refresh the profile list in cslol-manager
+
+### Delete a Profile
+
+<Steps>
+  <Step title="Select Profile to Delete">
+    Choose the profile from the dropdown.
+  </Step>
+
+  <Step title="Click Delete">
+    Use the delete profile option (usually in a context menu or toolbar).
+  </Step>
+
+  <Step title="Confirm Deletion">
+    The profile directory `profiles/ProfileName/` will be removed completely.
+    
+    This deletes:
+    - The `.profile` file
+    - Any built overlay files
+    - The `.config` file
+  </Step>
+</Steps>
+
+<Note>
+  You cannot delete the "Default Profile" - it will be recreated automatically if missing.
+</Note>
+
+## Profile File Format
+
+Profile files are simple text files listing enabled mods:
+
+```
+Mod1 V1.0 by Author1
+Mod2 V2.5 by Author2
+Mod3 V1.2 by Author3
+```
+
+Each line represents one enabled mod (the mod's folder name in `installed/`).
+
+## Handling Mod Conflicts
+
+### What Are Conflicts?
+
+Conflicts occur when multiple mods modify the same game file. For example:
+- Two skins for the same champion
+- UI mods that change the same interface elements
+
+### Conflict Resolution
+
+By default, conflicts cause the overlay build to fail with an error. You have two options:
+
+<Tabs>
+  <Tab title="Manual Resolution">
+    **Remove conflicting mods**
+    
+    1. Review the error message to identify conflicting mods
+    2. Disable one of the conflicting mods
+    3. Rebuild the profile
+    
+    This ensures you know exactly which mods are active.
+  </Tab>
+  
+  <Tab title="Automatic Resolution">
+    **Enable "Skip Conflict Check"**
+    
+    1. Check the **Skip Conflict** option before running
+    2. The overlay builder uses the `--ignoreConflict` flag
+    3. Later mods in the list override earlier ones
+    
+    <Warning>
+      This may cause unexpected behavior if you're not sure which mod will win.
+    </Warning>
+  </Tab>
+</Tabs>
+
+### Mod Priority
+
+When `--ignoreConflict` is enabled, mod priority is determined by:
+
+1. **Order in the profile** - Later mods override earlier ones
+2. **Load order** - The sequence you added mods to the profile
+
+To change priority, recreate the profile with mods in the desired order.
+
+## Profile Storage
+
+Profiles are stored in the cslol-manager directory:
+
+```
+cslol-manager/
+├── current.profile          # Tracks currently selected profile
+└── profiles/
+    ├── Default Profile.profile
+    ├── Ranked.profile
+    ├── Default Profile/     # Built overlay for Default Profile
+    │   ├── champion.wad.client
+    │   └── ...
+    ├── Default Profile.config
+    └── Ranked/              # Built overlay for Ranked
+        └── ...
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Descriptive Names">
+    Good profile names help you quickly identify their purpose:
+    - ✅ "Ranked - Performance Only"
+    - ✅ "Full Skins Collection"
+    - ❌ "Profile1"
+    - ❌ "Test"
+  </Accordion>
+
+  <Accordion title="Create Separate Profiles for Testing">
+    Before adding new mods to your main profile:
+    1. Create a test profile
+    2. Add only the new mod
+    3. Verify it works correctly
+    4. Then add to your main profile
+  </Accordion>
+
+  <Accordion title="Keep Profiles Small">
+    Smaller profiles:
+    - Build faster
+    - Have fewer conflicts
+    - Are easier to troubleshoot
+    - Perform better in-game
+  </Accordion>
+
+  <Accordion title="Regular Backups">
+    Back up your `profiles/` directory regularly to preserve your configurations.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### Profile Won't Build
+
+If overlay building fails:
+- Check `log.txt` for detailed error messages
+- Look for mod conflicts in the output
+- Verify all mods in the profile are valid
+- Ensure the League path is correctly configured
+
+### Profile Won't Run
+
+If the patcher fails to start:
+- Verify `cslol-tools/mod-tools.exe` exists
+- Check anti-virus isn't blocking the patcher
+- Review the error message in the error dialog
+- Try running with admin privileges if prompted
+
+### Mods Not Applying In-Game
+
+If mods don't appear in-game:
+- Verify the profile is running (status indicator shows green)
+- Ensure you started League **after** starting the patcher
+- Check that you're using the correct game mode (SR vs ARAM vs TFT)
+- Review patcher output for `[DLL]` injection messages
+
+### Profile List Not Updating
+
+If new profiles don't appear:
+- Restart cslol-manager
+- Check the `profiles/` directory manually
+- Ensure the `.profile` file has the correct format
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installing Mods" icon="download" href="/guides/installing-mods">
+    Add more mods to your profiles
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+    Solve common issues
+  </Card>
+</CardGroup>

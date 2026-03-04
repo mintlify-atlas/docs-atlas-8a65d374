@@ -1,0 +1,215 @@
+---
+title: Mod Management
+description: Install, enable, disable, and organize mods in cslol-manager
+---
+
+## Overview
+
+cslol-manager provides a comprehensive mod management system that allows you to install, enable, disable, filter, and organize your League of Legends mods. The manager supports both the Fantome mod format (`.fantome`) and standard zip archives.
+
+## Installing Mods
+
+### Import from File
+
+You can install mods using several methods:
+
+<Steps>
+  <Step title="Using the Import Button">
+    Click the **Import** button (folder icon) in the bottom toolbar to open a file dialog.
+    
+    Supported formats:
+    - `.fantome` files (recommended)
+    - `.zip` archives
+  </Step>
+  
+  <Step title="Drag and Drop">
+    Simply drag a `.fantome` or `.zip` file from your file explorer directly into the mods list.
+  </Step>
+</Steps>
+
+### Installation Process
+
+When you install a mod, cslol-manager:
+
+1. Extracts the mod to the `installed/` directory
+2. Validates the mod structure (checks for `META/info.json`)
+3. Reads mod metadata including name, version, author, and description
+4. Adds the mod to your mods list (disabled by default)
+
+<Warning>
+  Mods must contain a valid `META/info.json` file to be recognized by cslol-manager.
+</Warning>
+
+## Managing Mods
+
+### Enable/Disable Mods
+
+Each mod in your list has a checkbox that controls whether it's active:
+
+- **Checked**: Mod is enabled and will be applied when you run the profile
+- **Unchecked**: Mod is disabled and won't be applied
+
+```qml
+// From CSLOLModsView.qml:305-322
+CheckBox {
+    width: parent.width * 0.3
+    id: modCheckbox
+    anchors.verticalCenter: parent.verticalCenter
+    text: model ? model.Name : ""
+    property bool installed: model ? model.Enabled : false
+    checked: false
+    onCheckedChanged: {
+        if (checked != installed) {
+            cslolModsViewModel.setProperty(index, "Enabled", checked)
+            cslolModsView.checkedUpdate()
+        }
+    }
+}
+```
+
+### Bulk Enable/Disable
+
+Use the checkbox in the bottom toolbar to:
+- **Enable all mods**: Check the box when it's unchecked or partially checked
+- **Disable all mods**: Uncheck the box when it's checked
+
+The checkbox automatically updates to show:
+- **Checked**: All mods are enabled
+- **Unchecked**: All mods are disabled  
+- **Partially Checked**: Some mods are enabled, some disabled
+
+### Filtering Mods
+
+The search box allows you to quickly find mods by:
+- **Mod name**: Searches the mod's display name
+- **Description**: Searches the mod's description text
+
+```qml
+// From CSLOLModsView.qml:89-91
+function searchMatches(info) {
+    return search == "" || info["Name"].toLowerCase().search(search) !== -1 
+           || info["Description"].toLowerCase().search(search) !== -1
+}
+```
+
+Search is case-insensitive and updates in real-time as you type.
+
+## Mod Actions
+
+Each mod provides several action buttons:
+
+### Edit Mod
+
+<Card icon="pencil" title="Edit Mod">
+  Opens the mod editor dialog where you can:
+  - Update mod metadata (name, version, author, description)
+  - Change the preview image
+  - Add or remove WAD files
+  - Browse mod files
+</Card>
+
+**Signal**: `modEdit(string fileName)` → `CSLOLTools.startEditMod(fileName)`
+
+### Export Mod
+
+<Card icon="file-export" title="Export Mod">
+  Exports the mod to a `.fantome` file that you can share or backup.
+</Card>
+
+**Signal**: `modExport(string fileName)` → `CSLOLTools.exportMod(name, dest)`
+
+The export process:
+1. Opens a save dialog
+2. Optimizes the mod (removes unmodified files)
+3. Creates a `.fantome` archive with metadata and WAD files
+
+### Remove Mod
+
+<Card icon="trash" title="Remove Mod" color="red">
+  Deletes the mod from your installation. This action cannot be undone.
+</Card>
+
+**Signal**: `modRemoved(string fileName)` → `CSLOLTools.deleteMod(name)`
+
+### Mod Info Links
+
+<CardGroup cols={2}>
+  <Card icon="question-circle" title="Home/Update Link">
+    Opens the mod's homepage or update URL (if provided by the author)
+  </Card>
+  
+  <Card icon="heart" title="Support Author">
+    Opens the author's support link (e.g., Patreon, Ko-fi, social media)
+  </Card>
+</CardGroup>
+
+## Mod Metadata
+
+Each mod displays the following information:
+
+| Field | Description | Example |
+|-------|-------------|----------|
+| **Name** | Display name of the mod | "Star Guardian Lux" |
+| **Version** | Semantic version number | "1.2.0" |
+| **Author** | Mod creator's name | "SkinModder123" |
+| **Description** | Brief description (2 lines max) | "High quality Star Guardian skin" |
+| **Image** | Preview image (PNG) | Stored in `META/image.png` |
+
+## Refreshing Mods
+
+Click the **Refresh** button (circular arrow icon) to rescan the `installed/` directory and update the mods list. This is useful when:
+
+- Manually adding mods to the installation directory
+- Mods were modified externally
+- You need to verify mod integrity
+
+```qml
+// From CSLOLModsView.qml:228-254
+function refreshedMods(mods) {
+    for (let fileName in mods) {
+        if (updateModInfo_model(fileName, mods[fileName], cslolModsViewModel) === -1) {
+            if (updateModInfo_model(fileName, mods[fileName], cslolModsViewModel2) === -1) {
+                addMod(fileName, mods[fileName], false)
+            }
+        }
+    }
+    // Remove mods that no longer exist
+    // ...
+}
+```
+
+**Signal**: `tryRefresh()` → `CSLOLTools.refreshMods()`
+
+## Storage Location
+
+Mods are stored in the following directory structure:
+
+```
+cslol-manager/
+├── installed/
+│   ├── Mod Name V1.0 by Author/
+│   │   ├── META/
+│   │   │   ├── info.json
+│   │   │   └── image.png
+│   │   └── WAD/
+│   │       ├── character.wad.client
+│   │       └── skin.wad.client
+│   └── Another Mod/
+│       └── ...
+```
+
+<Info>
+  Each mod must be in its own directory under `installed/` with a `META/info.json` file to be recognized.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Profiles" icon="layer-group" href="/features/profiles">
+    Learn how to organize mods into profiles
+  </Card>
+  
+  <Card title="Mod Creation" icon="plus" href="/features/mod-creation">
+    Create your own mods from RAW folders
+  </Card>
+</CardGroup>

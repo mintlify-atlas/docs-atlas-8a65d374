@@ -1,0 +1,530 @@
+---
+title: Fantome Format Specification
+description: Technical specification for .fantome mod files
+---
+
+## Overview
+
+Fantome is the industry-standard mod format for League of Legends custom content. A `.fantome` file is a ZIP archive containing:
+
+- **Metadata**: Mod information (name, version, author, description)
+- **WAD files**: Game asset modifications
+- **Preview image**: Optional thumbnail for mod managers
+
+The format is designed to be:
+- **Portable**: Single-file distribution
+- **Human-readable**: Standard ZIP format
+- **Validated**: Required structure for compatibility
+- **Optimized**: Only modified files included
+
+<Info>
+  The Fantome format was created by the [League Toolkit organization](https://github.com/LeagueToolkit) and is used by all major League of Legends mod managers.
+</Info>
+
+## File Structure
+
+A `.fantome` file is a ZIP archive with the following structure:
+
+```
+MyMod.fantome (ZIP archive)
+├── META/
+│   ├── info.json          # Required: Mod metadata
+│   └── image.png          # Optional: Preview image
+└── WAD/
+    ├── champion.wad.client
+    ├── skin.wad.client
+    └── effects.wad.client
+```
+
+### Directory Requirements
+
+| Directory | Required | Purpose |
+|-----------|----------|----------|
+| `META/` | Yes | Contains mod metadata and assets |
+| `META/info.json` | Yes | Mod information and versioning |
+| `META/image.png` | No | Preview thumbnail (recommended) |
+| `WAD/` | Yes* | Contains game asset modifications |
+
+<Note>
+  While `WAD/` is technically optional, a mod without WAD files won't modify the game.
+</Note>
+
+## Metadata: info.json
+
+The `META/info.json` file contains structured metadata:
+
+### Schema
+
+```json
+{
+  "Name": "string (required)",
+  "Version": "string (required)",
+  "Author": "string (required)",
+  "Description": "string (optional)",
+  "Home": "string (optional, URL)",
+  "Heart": "string (optional, URL)"
+}
+```
+
+### Field Specifications
+
+<AccordionGroup>
+  <Accordion title="Name (required)">
+    **Type**: String  
+    **Length**: 3-50 characters  
+    **Pattern**: `[\p{L}\p{M}\p{Pd}\p{Z}\p{N}\w]{3,50}`  
+    **Description**: Display name of the mod
+    
+    **Examples**:
+    ```json
+    "Name": "Star Guardian Lux"
+    "Name": "High Noon Yasuo - Custom VFX"
+    "Name": "UI Overhaul 2024"
+    ```
+    
+    <Warning>
+      Cannot be empty. Must contain at least 3 characters.
+    </Warning>
+  </Accordion>
+  
+  <Accordion title="Version (required)">
+    **Type**: String  
+    **Format**: Semantic versioning  
+    **Pattern**: `([0-9]{1,3})(\.[0-9]{1,3}){0,3}`  
+    **Description**: Mod version number
+    
+    **Valid formats**:
+    ```json
+    "Version": "1.0"
+    "Version": "2.5.1"
+    "Version": "1.0.0"
+    "Version": "3.2.1.0"
+    ```
+    
+    **Invalid formats**:
+    ```json
+    "Version": "v1.0"        // No 'v' prefix
+    "Version": "1.0-beta"    // No suffixes
+    "Version": "1234.0"      // Max 3 digits per segment
+    ```
+  </Accordion>
+  
+  <Accordion title="Author (required)">
+    **Type**: String  
+    **Length**: 3-50 characters  
+    **Pattern**: Same as Name  
+    **Description**: Creator's name or username
+    
+    **Examples**:
+    ```json
+    "Author": "SkinModder123"
+    "Author": "Jane Doe"
+    "Author": "Team Awesome"
+    ```
+  </Accordion>
+  
+  <Accordion title="Description (optional)">
+    **Type**: String  
+    **Length**: No strict limit (recommend < 500 chars)  
+    **Description**: Brief description of the mod
+    
+    **Example**:
+    ```json
+    "Description": "Custom Star Guardian skin for Lux with new VFX and animations. Includes recall animation and updated ability effects."
+    ```
+    
+    **Display**: Shown in mod managers, typically with 2-line limit in list views.
+  </Accordion>
+  
+  <Accordion title="Home (optional)">
+    **Type**: String (URL)  
+    **Pattern**: `^(http(s)?:\/\/).+$`  
+    **Description**: Homepage, update page, or documentation URL
+    
+    **Examples**:
+    ```json
+    "Home": "https://github.com/user/my-lol-mod"
+    "Home": "https://www.leagueoflegends.com/mods/my-mod"
+    "Home": "https://example.com/updates"
+    ```
+    
+    **Usage**: Displayed as a clickable link in mod managers (question mark icon).
+  </Accordion>
+  
+  <Accordion title="Heart (optional)">
+    **Type**: String (URL)  
+    **Pattern**: `^(http(s)?:\/\/).+$`  
+    **Description**: Support/donation link or author's social media
+    
+    **Examples**:
+    ```json
+    "Heart": "https://ko-fi.com/modauthor"
+    "Heart": "https://patreon.com/modauthor"
+    "Heart": "https://twitter.com/modauthor"
+    ```
+    
+    **Usage**: Displayed as a clickable link in mod managers (heart icon).
+  </Accordion>
+</AccordionGroup>
+
+### Complete Example
+
+```json
+{
+  "Name": "PROJECT: Yasuo Enhanced",
+  "Version": "2.1.0",
+  "Author": "CoolModder",
+  "Description": "Enhanced PROJECT: Yasuo skin with custom VFX, animations, and sound effects. Features include: neon windwall, cyberpunk recall, and updated ability particles.",
+  "Home": "https://github.com/coolmodder/project-yasuo",
+  "Heart": "https://ko-fi.com/coolmodder"
+}
+```
+
+## WAD Files
+
+WAD ("Where's All the Data") files contain game assets:
+
+### Naming Convention
+
+WAD files must use the `.wad.client` extension:
+
+```
+character_base.wad.client     ✓ Valid
+lux_skin15.wad.client          ✓ Valid
+mymod.wad                      ✗ Invalid (missing .client)
+custom.wad.server              ✗ Invalid (wrong suffix)
+```
+
+### File Content
+
+WAD files contain:
+- **Textures**: `.dds` image files
+- **Models**: `.skn`, `.sco` mesh files
+- **Animations**: `.anm` animation data
+- **VFX**: `.bin` effect files
+- **Audio**: `.wem`, `.bnk` sound files
+- **Other**: Configuration, scripts, etc.
+
+<Warning>
+  WAD files should only contain **modified** assets, not entire base game files. Use rebasing/optimization to strip unmodified entries.
+</Warning>
+
+### Optimization
+
+Before packaging, WAD files should be optimized:
+
+```bash
+# Using mod-tools CLI
+mod-tools copy ./MyMod ./MyMod.optimized --game:"C:/Riot Games/League of Legends"
+mod-tools export ./MyMod.optimized ./MyMod.fantome
+```
+
+Optimization:
+1. **Rebases** against game WADs (finds base mount)
+2. **Removes** unmodified files (identical to base game)
+3. **Strips** unknown files (if `--removeUNK` is set)
+4. **Resolves** internal conflicts
+5. **Normalizes** file paths and naming
+
+## Preview Image
+
+### Specifications
+
+| Property | Requirement |
+|----------|-------------|
+| **Location** | `META/image.png` |
+| **Format** | PNG (required) |
+| **Resolution** | 512x512 or higher (recommended) |
+| **Aspect Ratio** | Square (1:1) or 16:9 |
+| **File Size** | < 1 MB (recommended) |
+| **Color Space** | sRGB |
+
+### Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use high-quality screenshots">
+    - Capture in-game footage at high resolution
+    - Show the most impactful visual changes
+    - Avoid UI elements unless they're part of the mod
+  </Accordion>
+  
+  <Accordion title="Optimize file size">
+    - Use PNG compression (pngquant, TinyPNG)
+    - Target 200-500 KB for best balance
+    - Avoid transparency unless necessary
+  </Accordion>
+  
+  <Accordion title="Maintain aspect ratio">
+    - Square (1:1) works best in list views
+    - 16:9 works for detailed preview dialogs
+    - Avoid extreme aspect ratios
+  </Accordion>
+</AccordionGroup>
+
+### Loading in cslol-manager
+
+```cpp
+// From CSLOLModsView.qml:45
+Image: CSLOLUtils.toFile("./installed/" + fileName + "/META/image.png")
+```
+
+Images are cached and displayed in the mods list.
+
+## Creating Fantome Files
+
+### Using cslol-manager UI
+
+<Steps>
+  <Step title="Create or edit mod">
+    Use the mod creation/editing interface to set up your mod.
+  </Step>
+  
+  <Step title="Click 'Export Mod'">
+    Click the export button (folder icon) next to your mod.
+  </Step>
+  
+  <Step title="Choose save location">
+    Select where to save the `.fantome` file.
+  </Step>
+  
+  <Step title="Automatic optimization">
+    cslol-manager automatically optimizes before export (if game path is set).
+  </Step>
+</Steps>
+
+```qml
+// From main.qml:204-210
+onModExport: function(fileName) {
+    if (checkGamePath()) {
+        cslolDialogSaveZipFantome.modName = fileName
+        cslolDialogSaveZipFantome.currentFiles = [ "file:///" + fileName + ".fantome" ]
+        cslolDialogSaveZipFantome.open()
+    }
+}
+```
+
+**Signal**: `CSLOLTools.exportMod(name, dest)`
+
+### Using mod-tools CLI
+
+```bash
+# Export with optimization
+mod-tools export <mod_dir> <output.fantome> --game:<game_path>
+
+# Example
+mod-tools export ./MySkin ./MySkin.fantome --game:"C:/Riot Games/League of Legends"
+```
+
+### Manual Creation
+
+You can manually create a `.fantome` file:
+
+<Steps>
+  <Step title="Prepare directory structure">
+    ```
+    MyMod/
+    ├── META/
+    │   ├── info.json
+    │   └── image.png
+    └── WAD/
+        └── *.wad.client
+    ```
+  </Step>
+  
+  <Step title="Create ZIP archive">
+    ```bash
+    # Linux/Mac
+    cd MyMod
+    zip -r ../MyMod.fantome META/ WAD/
+    
+    # Windows (PowerShell)
+    Compress-Archive -Path META, WAD -DestinationPath MyMod.fantome
+    ```
+  </Step>
+  
+  <Step title="Rename to .fantome">
+    ```bash
+    mv MyMod.zip MyMod.fantome
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  Manual creation skips optimization. Use `mod-tools export` for best results.
+</Warning>
+
+## Installing Fantome Files
+
+### Supported Methods
+
+<CardGroup cols={2}>
+  <Card title="Import Button" icon="folder-open">
+    Click the import button in mod manager and select the `.fantome` file.
+  </Card>
+  
+  <Card title="Drag and Drop" icon="hand-pointer">
+    Drag `.fantome` file directly into the mod list.
+  </Card>
+</CardGroup>
+
+### Installation Process
+
+1. **Validation**: Checks for required `META/info.json`
+2. **Extraction**: Unzips to `installed/{Name} V{Version} by {Author}/`
+3. **Metadata loading**: Reads `info.json` and `image.png`
+4. **Registration**: Adds mod to the mods list (disabled by default)
+
+```cpp
+// Signal: installFantomeZip(QString path)
+onInstalledMod: function(fileName, infoData) {
+    cslolModsView.addMod(fileName, infoData, false)
+}
+```
+
+## File Dialog Filters
+
+```qml
+// From CSLOLDialogOpenZipFantome.qml:11
+nameFilters: "Fantome Mod files (*.fantome *.zip)"
+```
+
+Both `.fantome` and `.zip` extensions are accepted.
+
+## Compatibility
+
+### Supported Managers
+
+- **cslol-manager**: Full support (reference implementation)
+- **LTK Manager**: Full support (successor project)
+- **Fantome**: Original mod manager (deprecated)
+
+### Version Compatibility
+
+The Fantome format is **forward compatible**:
+- Older managers can read newer `.fantome` files (if they follow the spec)
+- Newer managers fully support older `.fantome` files
+
+### Game Version
+
+<Warning>
+  Fantome mods are **game version specific**. WAD files from older patches may not work with newer game versions due to:
+  - Asset path changes
+  - File format updates
+  - New game features
+  - WAD structure reorganization
+</Warning>
+
+Best practices:
+- Test mods after game updates
+- Rebuild/rebase mods against new game files
+- Update mod version when rebuilding
+- Document compatible game versions
+
+## Advanced Topics
+
+### Conflict Resolution
+
+When multiple mods modify the same file:
+
+1. **Within a mod**: Later WAD in alphabetical order wins
+2. **Across mods**: Mod order in profile determines priority
+3. **Manager behavior**: Can warn or auto-resolve based on settings
+
+```qml
+// From main.qml:104
+cslolTools.saveProfile(name, mods, run, settings.suppressInstallConflicts, 
+                       settings.verbosePatcher)
+```
+
+**suppressInstallConflicts**: Skip conflict warnings (use with caution)
+
+### Overlay Generation
+
+The mod-tools CLI can create overlays from multiple mods:
+
+```bash
+mod-tools mkoverlay <mods_dir> <overlay_dir> --game:<path> --mods:<mod1>/<mod2>/...
+```
+
+Overlay process:
+1. Indexes game WADs
+2. Loads each mod in order
+3. Resolves conflicts (later mod wins)
+4. Removes unsafe entries (e.g., `*.SubChunkTOC`)
+5. Writes merged overlay WADs
+
+### Rebasing
+
+Rebasing aligns mod WAD filenames to base game mounts:
+
+**Without rebasing**:
+```
+WAD/
+└── mymod.wad.client          # Generic name
+```
+
+**With rebasing**:
+```
+WAD/
+└── ezreal_base_tx_cm.wad.client   # Aligned to base mount
+```
+
+Benefits:
+- Smaller file sizes (strips unmodified entries)
+- Better compatibility
+- Clearer file purpose
+- Easier conflict detection
+
+## Validation Checklist
+
+Before distributing a `.fantome` mod:
+
+<Tabs>
+  <Tab title="Required">
+    - [ ] File is valid ZIP archive
+    - [ ] Contains `META/info.json`
+    - [ ] `info.json` has Name, Version, Author
+    - [ ] Name is 3-50 characters
+    - [ ] Version follows semantic versioning
+    - [ ] Author is 3-50 characters
+    - [ ] Contains at least one `.wad.client` file in `WAD/`
+  </Tab>
+  
+  <Tab title="Recommended">
+    - [ ] Contains `META/image.png` (512x512+)
+    - [ ] Description explains what the mod does
+    - [ ] Home URL for updates/documentation
+    - [ ] WAD files are optimized/rebased
+    - [ ] Tested in-game on current patch
+    - [ ] No unmodified files in WADs
+    - [ ] File size < 50 MB (if possible)
+  </Tab>
+  
+  <Tab title="Optional">
+    - [ ] Heart URL for support/donations
+    - [ ] Version follows semantic versioning strictly
+    - [ ] Image file < 500 KB
+    - [ ] Includes credits in description
+    - [ ] WAD filenames match base mounts
+  </Tab>
+</Tabs>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="League Toolkit" icon="github" href="https://github.com/LeagueToolkit">
+    Official organization for LoL modding tools
+  </Card>
+  
+  <Card title="Fantome Wiki" icon="book" href="https://github.com/LeagueToolkit/Fantome/wiki/Mod-File-Format">
+    Original Fantome format specification
+  </Card>
+  
+  <Card title="mod-tools CLI" icon="terminal" href="/cli/overview">
+    Command-line tools for mod management
+  </Card>
+  
+  <Card title="Mod Creation Guide" icon="hammer" href="/features/mod-creation">
+    Learn how to create mods in cslol-manager
+  </Card>
+</CardGroup>

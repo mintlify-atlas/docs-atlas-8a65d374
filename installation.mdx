@@ -1,0 +1,145 @@
+---
+title: Installation
+description: Install cslol-manager on Windows 10 or 11
+---
+
+## Prerequisites
+
+Before installing cslol-manager, ensure you have:
+
+- **Windows 10 or Windows 11** (64-bit operating system)
+- **League of Legends** installed on your computer
+- A Riot-operated server account (NA, EUW, EUNE, etc.)
+
+<Warning>
+  Asian servers and Garena are not officially supported and may experience issues.
+</Warning>
+
+## Download cslol-manager
+
+<Steps>
+  <Step title="Navigate to the releases page">
+    Go to the [cslol-manager releases page](https://github.com/LeagueToolkit/cslol-manager/releases) on GitHub.
+    
+    Look for the latest release version at the top of the page.
+  </Step>
+  
+  <Step title="Download the executable">
+    Download one of the following files:
+    
+    - **cslol-manager.exe** - Standalone executable (recommended for most users)
+    - **cslol-manager.zip** - Zip bundle containing the executable and additional tools
+    
+    <Info>
+      The zip bundle includes additional command-line tools like `mod-tools.exe` for advanced users.
+    </Info>
+  </Step>
+  
+  <Step title="Save to a permanent location">
+    Choose a permanent location for cslol-manager, such as:
+    
+    ```
+    C:\Program Files\cslol-manager\
+    ```
+    
+    or
+    
+    ```
+    C:\Users\YourName\Documents\cslol-manager\
+    ```
+    
+    <Warning>
+      Do not run cslol-manager from your Downloads folder or a temporary location. The application creates configuration files and mod storage in its directory.
+    </Warning>
+  </Step>
+</Steps>
+
+## First launch
+
+<Steps>
+  <Step title="Run cslol-manager.exe">
+    Double-click `cslol-manager.exe` to launch the application.
+    
+    On first launch, Windows may show a SmartScreen warning. Click "More info" and then "Run anyway" to proceed.
+  </Step>
+  
+  <Step title="Configure League of Legends path">
+    cslol-manager will attempt to auto-detect your League of Legends installation.
+    
+    If auto-detection fails, you'll be prompted to manually select your League installation directory. This should be the folder containing `League of Legends.exe`, typically:
+    
+    ```
+    C:\Riot Games\League of Legends\
+    ```
+    
+    <Info>
+      You can change this path later in Settings if needed.
+    </Info>
+  </Step>
+  
+  <Step title="Verify installation">
+    Once configured, you should see the main cslol-manager window with:
+    
+    - A toolbar at the top with profile management and run controls
+    - An empty mod list (you haven't installed any mods yet)
+    - A status bar at the bottom
+    
+    The application creates several files and folders in its directory:
+    
+    - `installed/` - Where your mods are stored
+    - `profiles/` - Profile configuration files
+    - `config.ini` - Application settings
+    - `log.txt` - Application logs
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Admin permissions error
+
+If you encounter an error about admin permissions:
+
+1. Close cslol-manager
+2. Right-click `cslol-manager.exe`
+3. Select "Run as administrator"
+
+The application will create an `admin_allowed.txt` file to remember this setting.
+
+### Non-English Windows error
+
+If you're using a non-English version of Windows and experience issues, you may need to apply a registry fix. The zip bundle includes `FIX-NON-ENGLISH.reg` that can help resolve these issues.
+
+<Warning>
+  Only run `.reg` files if you understand what they do. Always back up your registry before making changes.
+</Warning>
+
+### Asian server check error
+
+If you see an error message like "因封禁，亚洲服不支持!" (Asian servers not supported), this means cslol-manager detected you're trying to use it with an unsupported server.
+
+<Info>
+  For detailed diagnostics, use the "Run Diagnostics" option in the toolbar menu to generate a diagnostic report.
+</Info>
+
+## Directory structure
+
+After installation and first run, your cslol-manager directory will look like this:
+
+```
+cslol-manager/
+├── cslol-manager.exe          # Main application
+├── cslol-tools/               # Command-line tools
+│   ├── mod-tools.exe          # Mod manipulation CLI
+│   └── cslol-dll.dll          # Core injection module
+├── installed/                 # Your installed mods
+├── profiles/                  # Profile configurations
+├── config.ini                 # Application settings
+├── current.profile            # Active profile name
+└── log.txt                    # Application logs
+```
+
+## Next steps
+
+<Card title="Quickstart guide" icon="rocket" href="/quickstart">
+  Now that cslol-manager is installed, learn how to install and run your first mod
+</Card>

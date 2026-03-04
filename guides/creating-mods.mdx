@@ -1,0 +1,271 @@
+---
+title: Creating Mods
+description: Tutorial for creating custom mods from scratch using cslol-manager
+---
+
+Create your own custom skins and modifications for League of Legends using the mod creation tools built into cslol-manager.
+
+## Overview
+
+There are several ways to create a mod:
+
+- **From RAW folder** - Start with custom asset files
+- **From WAD files** - Use extracted or modified WAD archives
+- **From scratch** - Create an empty mod and add files later
+
+## Creating a New Mod
+
+<Steps>
+  <Step title="Open the New Mod Dialog">
+    Click the **New Mod** button in cslol-manager's toolbar.
+    
+    This opens the mod creation interface where you'll define your mod's metadata.
+  </Step>
+
+  <Step title="Fill in Mod Information">
+    Provide the following details:
+    
+    <ResponseField name="Name" type="string" required>
+      The display name of your mod (e.g., "Dark Star Ahri")
+    </ResponseField>
+    
+    <ResponseField name="Version" type="string" required>
+      Semantic version number (e.g., "1.0.0")
+    </ResponseField>
+    
+    <ResponseField name="Author" type="string" required>
+      Your name or username
+    </ResponseField>
+    
+    <ResponseField name="Description" type="string">
+      A brief description of what your mod does
+    </ResponseField>
+    
+    <ResponseField name="Home" type="string">
+      URL to your mod's homepage or download page
+    </ResponseField>
+  </Step>
+
+  <Step title="Add a Preview Image">
+    Upload a preview image (PNG format recommended) to help users identify your mod.
+    
+    The image will be saved as `META/image.png` in your mod directory.
+  </Step>
+
+  <Step title="Save the Mod">
+    Click **Save** to create the mod structure.
+    
+    The mod will be created with the filename format:
+    ```
+    ModName V1.0.0 by Author
+    ```
+  </Step>
+</Steps>
+
+## Adding Content to Your Mod
+
+After creating the basic mod structure, you need to add game files.
+
+### Method 1: Add WAD Files
+
+<Steps>
+  <Step title="Edit Your Mod">
+    Right-click your mod in the list and select **Edit Mod**.
+  </Step>
+
+  <Step title="Add WAD File">
+    Click **Add WAD** and select:
+    - A `.wad` or `.wad.client` file
+    - An unpacked WAD directory
+  </Step>
+
+  <Step title="Configure Import Options">
+    Choose whether to:
+    - **Rebase against game** - Recommended to reduce file size
+    - **Remove unknown entries** - Strips files not present in the base game
+  </Step>
+
+  <Step title="Wait for Processing">
+    The tool will:
+    - Import the WAD contents
+    - Compare against game files
+    - Strip duplicate/unmodified entries
+    - Save optimized output to `WAD/` directory
+  </Step>
+</Steps>
+
+### Method 2: Use CLI Tools
+
+For advanced workflows, use the `mod-tools` command-line interface:
+
+```bash
+# Create a mod from a RAW folder
+mod-tools import ./MyRawAssets ./installed/MyMod --game:/path/to/league
+
+# Add a WAD to an existing mod
+mod-tools addwad ./modified.wad ./installed/MyMod --game:/path/to/league --removeUNK
+```
+
+See the [CLI Commands](/cli/commands/import) documentation for full details.
+
+## Working with WAD Files
+
+### Extracting Game WADs
+
+Before you can modify game assets, you need to extract them:
+
+<Steps>
+  <Step title="Locate Game WAD Files">
+    Game WADs are located in:
+    ```
+    League of Legends/Game/DATA/FINAL/Champions/
+    ```
+  </Step>
+
+  <Step title="Extract the WAD">
+    Use the extraction command:
+    ```bash
+    wad-extract input.wad.client ./output-directory
+    ```
+  </Step>
+
+  <Step title="Modify Files">
+    Edit textures, models, or other assets in the extracted directory.
+  </Step>
+
+  <Step title="Create Mod from Modified Files">
+    Import the modified directory:
+    ```bash
+    mod-tools import ./output-directory ./MyMod --game:/path/to/league
+    ```
+  </Step>
+</Steps>
+
+### Understanding WAD Structure
+
+Extracted WAD directories typically contain:
+
+```
+Champion.wad.client/
+├── data/
+│   └── characters/
+│       └── champion/
+│           ├── skins/
+│           │   └── skin01.dds
+│           └── animations/
+├── assets/
+└── OBSIDIAN_PACKED_MAPPING.txt
+```
+
+## Mod Metadata Format
+
+The `META/info.json` file contains mod information:
+
+```json
+{
+  "Name": "My Custom Skin",
+  "Version": "1.0.0",
+  "Author": "YourName",
+  "Description": "A beautiful custom skin for Champion X",
+  "Home": "https://example.com/mods",
+  "Heart": ""
+}
+```
+
+All fields are automatically validated and populated with defaults if missing.
+
+## Exporting Your Mod
+
+Once your mod is ready to share:
+
+<Steps>
+  <Step title="Select Your Mod">
+    Right-click the mod in the mod list.
+  </Step>
+
+  <Step title="Choose Export">
+    Select **Export** from the context menu.
+  </Step>
+
+  <Step title="Save Location">
+    Choose where to save the `.fantome` or `.zip` file.
+  </Step>
+
+  <Step title="Wait for Export">
+    The export process will:
+    - Optimize the mod against game files
+    - Package all files into an archive
+    - Apply TFT filtering if enabled
+  </Step>
+</Steps>
+
+The exported file can be shared with other users or published to mod repositories.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Semantic Versioning">
+    Follow the `MAJOR.MINOR.PATCH` format:
+    - **MAJOR**: Breaking changes or complete overhauls
+    - **MINOR**: New features, backwards compatible
+    - **PATCH**: Bug fixes and small tweaks
+  </Accordion>
+
+  <Accordion title="Always Rebase Against Game Files">
+    This ensures:
+    - Smaller mod file sizes
+    - Compatibility with game updates
+    - Faster overlay building
+  </Accordion>
+
+  <Accordion title="Test Before Sharing">
+    Always test your mod:
+    1. Create a test profile
+    2. Add only your mod
+    3. Run the game and verify changes
+    4. Check for conflicts or errors
+  </Accordion>
+
+  <Accordion title="Include Preview Images">
+    A good preview image helps users:
+    - Identify your mod quickly
+    - Understand what the mod changes
+    - Make informed decisions about installation
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### Mod Creation Failed
+
+If mod creation fails:
+- Check that the `installed/` directory is writable
+- Ensure mod name doesn't contain invalid characters
+- Verify anti-virus isn't blocking file operations
+
+### WAD Import Errors
+
+If adding WAD files fails:
+- Verify the WAD file isn't corrupted
+- Ensure the League path is correctly configured
+- Check that `cslol-tools/mod-tools.exe` exists
+- Review `log.txt` for detailed error messages
+
+### Changes Not Appearing In-Game
+
+If your mod doesn't work:
+- Verify the profile is running (green indicator)
+- Check for mod conflicts in the overlay build log
+- Ensure you're modifying the correct champion WAD
+- Try rebuilding the profile with `--ignoreConflict`
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="WAD Files Guide" icon="file-zipper" href="/guides/wad-files">
+    Deep dive into WAD file operations
+  </Card>
+  <Card title="CLI Tools" icon="terminal" href="/cli/overview">
+    Master the command-line tools
+  </Card>
+</CardGroup>
