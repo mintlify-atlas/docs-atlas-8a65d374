@@ -1,0 +1,115 @@
+---
+title: wad-extract
+description: Extract WAD files to a directory structure for modification
+---
+
+The `wad-extract` utility extracts League of Legends WAD archive files into a directory structure that you can modify.
+
+## Syntax
+
+```bash
+wad-extract <input.wad> <output-directory>
+```
+
+## Arguments
+
+<ParamField path="input.wad" type="string" required>
+  Path to the WAD file to extract. Can be `.wad` or `.wad.client` format.
+</ParamField>
+
+<ParamField path="output-directory" type="string" required>
+  Directory where extracted files will be written. Will be created if it doesn't exist.
+</ParamField>
+
+## Behavior
+
+The tool extracts all files from the WAD archive and creates:
+
+- **Directory structure** - Organized folders (`data/`, `assets/`, `levels/`)
+- **Extracted files** - All assets in their original format
+- **OBSIDIAN_PACKED_MAPPING.txt** - Hash mapping file for repacking
+
+## Examples
+
+### Extract a champion WAD
+
+```bash
+wad-extract "C:/Riot Games/League of Legends/Game/DATA/FINAL/Champions/Ahri.wad.client" ./Ahri-extracted
+```
+
+This extracts all of Ahri's assets to the `Ahri-extracted/` directory.
+
+### Extract a map WAD
+
+```bash
+wad-extract "./Summoners_Rift.wad.client" ./SR-assets
+```
+
+## Output Structure
+
+After extraction, the output directory will contain:
+
+```
+output-directory/
+├── data/
+│   └── characters/
+│       ├── ahri/
+│       │   ├── ahri.bin
+│       │   └── skins/
+├── assets/
+│   └── characters/
+│       └── ahri/
+│           ├── skins/
+│           │   └── base/
+│           │       ├── ahri.skn
+│           │       ├── ahri.dds
+│           │       └── ahri.skl
+└── OBSIDIAN_PACKED_MAPPING.txt
+```
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="wad-make" icon="hammer" href="/cli/utilities/wad-make">
+    Pack a directory back into a WAD file
+  </Card>
+  
+  <Card title="WAD Files Guide" icon="book" href="/guides/wad-files">
+    Complete guide to working with WAD files
+  </Card>
+</CardGroup>
+
+## Common Use Cases
+
+### Extracting for mod creation
+
+1. Extract the base game WAD for the champion/skin you want to mod
+2. Modify the extracted files (textures, models, etc.)
+3. Use `wad-make` to repack or import into a mod folder with `mod-tools import`
+
+### Inspecting game assets
+
+Extract WADs to explore League's asset structure and learn how files are organized.
+
+## Notes
+
+- Extraction preserves the original file structure and naming
+- The `OBSIDIAN_PACKED_MAPPING.txt` file is crucial for repacking - don't delete it
+- Large WADs (maps, champions with many skins) may take time to extract
+- Extracted files maintain their original formats (.dds, .skn, .skl, .bin, etc.)
+
+## Troubleshooting
+
+<Accordion title="Error: Failed to open WAD file">
+  - Verify the WAD file path is correct
+  - Ensure you have read permissions for the file
+  - Check that the file is a valid WAD format (not corrupted)
+</Accordion>
+
+<Accordion title="Output directory already exists">
+  The tool will overwrite existing files. Back up any important data before extracting to an existing directory.
+</Accordion>
+
+<Accordion title="Missing files after extraction">
+  Some WAD files may be compressed or use special formats. Ensure you're using the latest version of the tools.
+</Accordion>

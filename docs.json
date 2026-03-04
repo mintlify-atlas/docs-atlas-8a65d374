@@ -63,7 +63,7 @@
             ]
           },
           {
-            "group": "Commands",
+            "group": "mod-tools Commands",
             "pages": [
               "cli/commands/addwad",
               "cli/commands/copy",
@@ -71,6 +71,13 @@
               "cli/commands/import",
               "cli/commands/mkoverlay",
               "cli/commands/runoverlay"
+            ]
+          },
+          {
+            "group": "WAD Utilities",
+            "pages": [
+              "cli/utilities/wad-extract",
+              "cli/utilities/wad-make"
             ]
           }
         ]

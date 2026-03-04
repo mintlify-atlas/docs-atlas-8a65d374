@@ -8,23 +8,39 @@ description: 'How to install and build the mod-tools CLI for working with CSLOL 
 Before installing mod-tools CLI, ensure you have the following:
 
 - Access to the cslol-manager source repository
-- Rust toolchain (if building from source)
+- CMake 3.20 or higher
+- C++ compiler with C++20 support (MSVC, GCC, or Clang)
+- Git
 - League of Legends installation (for game-specific operations)
 
 ## Building from Source
 
-The mod-tools CLI is part of the cslol-manager project and needs to be built from source:
+The mod-tools CLI is part of the cslol-manager project and is built with CMake:
 
-```bash
-# Clone the repository
-git clone https://github.com/LeagueToolkit/cslol-manager.git
-cd cslol-manager
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/LeagueToolkit/cslol-manager.git
+    cd cslol-manager
+    ```
+  </Step>
 
-# Build the project
-cargo build --release
-```
+  <Step title="Create build directory">
+    ```bash
+    mkdir build
+    cd build
+    ```
+  </Step>
 
-The compiled binary will be located at `target/release/mod-tools`.
+  <Step title="Configure and build">
+    ```bash
+    cmake ..
+    cmake --build . --config Release
+    ```
+  </Step>
+</Steps>
+
+The compiled binaries will be located in the build output directory (platform-dependent).
 
 ## Installation
 
@@ -34,7 +50,7 @@ After building, you can install the CLI globally:
 
 ```bash
 # Copy to a directory in your PATH
-sudo cp target/release/mod-tools /usr/local/bin/
+sudo cp build/cslol-tools/mod-tools /usr/local/bin/
 
 # Make it executable
 sudo chmod +x /usr/local/bin/mod-tools
@@ -42,12 +58,16 @@ sudo chmod +x /usr/local/bin/mod-tools
 
 ### Windows
 
+The Windows build includes pre-built binaries. After building or downloading a release:
+
 ```powershell
-# Copy to a directory in your PATH
-copy target\release\mod-tools.exe C:\Windows\System32\
+# The tools are in the build output or release directory
+# Add the directory to your PATH or copy to a system location
 ```
 
-Or add the `target/release` directory to your system PATH.
+<Info>
+  The easiest way to use the CLI tools on Windows is to run them from the cslol-manager installation directory, where they're included with the application.
+</Info>
 
 ## Verifying Installation
 

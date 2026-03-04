@@ -1,0 +1,156 @@
+---
+title: wad-make
+description: Pack a directory into a WAD archive file
+---
+
+The `wad-make` utility creates a League of Legends WAD archive from a directory structure, typically one that was previously extracted with `wad-extract`.
+
+## Syntax
+
+```bash
+wad-make <input-directory> <output.wad>
+```
+
+## Arguments
+
+<ParamField path="input-directory" type="string" required>
+  Directory containing the files to pack. Must have the proper structure with `OBSIDIAN_PACKED_MAPPING.txt`.
+</ParamField>
+
+<ParamField path="output.wad" type="string" required>
+  Path for the output WAD file. Usually ends with `.wad.client`.
+</ParamField>
+
+## Requirements
+
+The input directory must contain:
+
+1. **OBSIDIAN_PACKED_MAPPING.txt** - Hash mapping file from extraction
+2. **Proper directory structure** - `data/`, `assets/`, or `levels/` folders
+3. **Valid game files** - Assets in their original or modified formats
+
+## Behavior
+
+The tool:
+
+1. Reads the directory structure and mapping file
+2. Compresses and packs all files into WAD format
+3. Creates a `.wad.client` file ready for use
+
+## Examples
+
+### Pack modified champion assets
+
+```bash
+wad-make ./Ahri-modified ./Ahri-custom.wad.client
+```
+
+Creates a WAD file from your modified Ahri assets.
+
+### Create WAD for mod distribution
+
+```bash
+wad-make ./my-skin-files ./custom-skin.wad.client
+```
+
+## Typical Workflow
+
+<Steps>
+  <Step title="Extract original WAD">
+    ```bash
+    wad-extract original.wad.client ./working-directory
+    ```
+  </Step>
+
+  <Step title="Modify files">
+    Edit textures, models, or configuration files in the extracted directory.
+  </Step>
+
+  <Step title="Pack modified files">
+    ```bash
+    wad-make ./working-directory ./modified.wad.client
+    ```
+  </Step>
+
+  <Step title="Import into mod">
+    Use the WAD file with `mod-tools` or add to a mod folder:
+    ```bash
+    mod-tools import ./modified.wad.client ./MyMod
+    ```
+  </Step>
+</Steps>
+
+## Output Format
+
+The created WAD file:
+
+- Uses the `.wad.client` format compatible with League of Legends
+- Contains compressed asset data
+- Can be used with cslol-manager or `mod-tools`
+- Is ready for distribution as part of a Fantome mod
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="wad-extract" icon="box-open" href="/cli/utilities/wad-extract">
+    Extract WAD files to directories
+  </Card>
+  
+  <Card title="mod-tools import" icon="file-import" href="/cli/commands/import">
+    Import WADs directly into mod folders
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+### Preserve the mapping file
+
+<Warning>
+  Never delete or modify `OBSIDIAN_PACKED_MAPPING.txt`. This file is essential for correct hash mapping during packing.
+</Warning>
+
+### Maintain directory structure
+
+Keep the same folder structure as the extracted WAD:
+
+```
+working-directory/
+├── data/
+├── assets/
+├── levels/ (if applicable)
+└── OBSIDIAN_PACKED_MAPPING.txt
+```
+
+### File naming
+
+Output WAD files should use the `.wad.client` extension for compatibility.
+
+## Troubleshooting
+
+<Accordion title="Error: Missing OBSIDIAN_PACKED_MAPPING.txt">
+  The directory must contain the mapping file created during extraction. If you lost it:
+  
+  1. Re-extract the original WAD
+  2. Copy the mapping file to your working directory
+  3. Try packing again
+</Accordion>
+
+<Accordion title="Created WAD doesn't work in game">
+  - Verify the directory structure matches the original extraction
+  - Ensure modified files are in valid formats (.dds, .skn, etc.)
+  - Check file permissions and paths
+  - Try importing the WAD through `mod-tools` instead of using it directly
+</Accordion>
+
+<Accordion title="Files missing from packed WAD">
+  - Ensure all files are in the correct subdirectories
+  - Check that file names match the mapping file entries
+  - Verify files aren't corrupted or in the wrong format
+</Accordion>
+
+## Notes
+
+- Packing large directories may take time depending on file count and size
+- The tool automatically compresses files during packing
+- Output WADs can be significantly smaller than the extracted directory
+- Packed WADs are not directly usable by the game - they must be loaded through cslol-manager or mod-tools
